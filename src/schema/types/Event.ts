@@ -90,10 +90,10 @@ export const Event = objectType({
   },
 });
 
-export const createEvent = mutationField('createEvent', {
-  type: 'Event',
+export const createEvent = mutationField("createEvent", {
+  type: "Event",
   args: {
-    data: nonNull('EventInput'),
+    data: nonNull("EventInput"),
   },
   resolve: async (_, { data }, ctx: Context) => {
     return await ctx.prisma.event.create({
@@ -117,14 +117,14 @@ export const createEvent = mutationField('createEvent', {
         posterEmail: data.posterEmail,
         attendeesEmail: data.attendees_Email,
         activities: {
-          create: data.activities?.map(a => ({
+          create: data.activities?.map((a) => ({
             title: a.title,
             speaker: a.speaker,
             time: a.time,
           })),
         },
         ticketTypes: {
-          create: data.ticketTypes?.map(t => ({
+          create: data.ticketTypes?.map((t) => ({
             type: t.type,
             price: t.price,
             quantity: t.quantity,
@@ -133,7 +133,8 @@ export const createEvent = mutationField('createEvent', {
         installmentConfig: data.installmentConfig
           ? {
               create: {
-                numberOfInstallments: data.installmentConfig.numberOfInstallments,
+                numberOfInstallments:
+                  data.installmentConfig.numberOfInstallments,
                 minPerInstallment: data.installmentConfig.minPerInstallment,
               },
             }
@@ -144,6 +145,6 @@ export const createEvent = mutationField('createEvent', {
         ticketTypes: true,
         installmentConfig: true,
       },
-    })
+    });
   },
-})
+});
