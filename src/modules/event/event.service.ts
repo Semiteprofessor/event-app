@@ -3,7 +3,6 @@ import { PrismaClient, Prisma } from "@prisma/client";
 export default function EventService({ prisma }: { prisma: PrismaClient }) {
   return {
     async createEvent(input: any) {
-      // Optional: validate input with Zod/Yup before proceeding
 
       const event = await prisma.event.create({
         data: {
@@ -26,7 +25,6 @@ export default function EventService({ prisma }: { prisma: PrismaClient }) {
           posterEmail: input.posterEmail,
           attendeesEmail: input.attendees_Email ?? [],
 
-          // ✅ Create related activities
           activities: input.activities?.length
             ? {
                 create: input.activities.map((a: any) => ({
@@ -37,7 +35,6 @@ export default function EventService({ prisma }: { prisma: PrismaClient }) {
               }
             : undefined,
 
-          // ✅ Create ticket types
           ticketTypes: input.ticketTypes?.length
             ? {
                 create: input.ticketTypes.map((t: any) => ({
@@ -48,7 +45,6 @@ export default function EventService({ prisma }: { prisma: PrismaClient }) {
               }
             : undefined,
 
-          // ✅ Create installment config if present
           installmentConfig: input.installmentConfig
             ? {
                 create: {
