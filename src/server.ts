@@ -11,7 +11,6 @@ async function start() {
   const app = await createServer();
   const port = process.env.PORT ?? 4000;
 
-  // 2️⃣ HTTP Server with request-level logging
   const server = http.createServer((req, res) => {
     const start = Date.now();
 
