@@ -16,7 +16,10 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  events        Event[]        @relation("OrganizerEvents")
+  eventsOrganized Event[] @relation("OrganizerEvents")
+
+  eventsCreated Event[] @relation("CreatorEvents")
+
   refreshTokens RefreshToken[]
 }
 
@@ -30,8 +33,11 @@ model RefreshToken {
 }
 
 model Event {
-  id          String @id @default(cuid())
-  userId      String
+  id String @id @default(cuid())
+
+  userId  String
+  creator User   @relation("CreatorEvents", fields: [userId], references: [id])
+
   name        String
   description String
 
@@ -78,7 +84,7 @@ model TicketType {
   id       String @id @default(cuid())
   type     String
   price    Float
-  quantity Int
+  quantity Int?
   booked   Int    @default(0)
   event    Event  @relation(fields: [eventId], references: [id])
   eventId  String
