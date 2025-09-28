@@ -116,7 +116,6 @@ export const createEvent = mutationField("createEvent", {
         posterEmail: data.posterEmail,
         attendeesEmail: data.attendees_Email,
 
-        // ✅ FIX HERE: connect creator relation
         creator: {
           connect: {
             id: data.userId,
