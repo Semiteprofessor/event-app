@@ -1,11 +1,7 @@
-
-import { NextApiRequest, NextApiResponse } from "next";
+import { Request, Response } from "express";
 import { emailQueue } from "../lib/queues/emailQueue";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handler(req: Request, res: Response) {
   if (req.method === "POST") {
     const { name, organizerEmail } = req.body;
 
