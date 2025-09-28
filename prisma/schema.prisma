@@ -34,6 +34,7 @@ model Event {
   userId      String
   name        String
   description String
+
   organizerId String
   organizer   User   @relation("OrganizerEvents", fields: [organizerId], references: [id])
 
@@ -41,6 +42,7 @@ model Event {
   organizerEmail String?
   hostEmail      String?
   posterEmail    String?
+
   guests         String[] @default([])
   attendeesEmail String[] @default([])
 
