@@ -36,7 +36,6 @@ model Event {
   organizerId       String
   organizer         User               @relation("OrganizerEvents", fields: [organizerId], references: [id])
   
-  // ✅ New fields from request body
   organizerName     String?
   organizerEmail    String?
   hostEmail         String?
@@ -55,7 +54,6 @@ model Event {
   allowInstallment  Boolean            @default(false)
   isPrivate         Boolean            @default(false)
 
-  // ✅ Relations
   media             Media[]
   ticketTypes       TicketType[]
   activities        Activity[]

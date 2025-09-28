@@ -8,7 +8,7 @@ import {
   intArg,
   booleanArg,
 } from "nexus";
-import { Context } from "../context";
+import { Context } from "../../context";
 
 export const ActivityInput = inputObjectType({
   name: "ActivityInput",
@@ -117,14 +117,14 @@ export const createEvent = mutationField("createEvent", {
         posterEmail: data.posterEmail,
         attendeesEmail: data.attendees_Email,
         activities: {
-          create: data.activities?.map((a) => ({
+          create: data.activities?.map((a: any) => ({
             title: a.title,
             speaker: a.speaker,
             time: a.time,
           })),
         },
         ticketTypes: {
-          create: data.ticketTypes?.map((t) => ({
+          create: data.ticketTypes?.map((t: any) => ({
             type: t.type,
             price: t.price,
             quantity: t.quantity,
