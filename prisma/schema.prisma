@@ -8,15 +8,15 @@ datasource db {
 }
 
 model User {
-  id            String          @id @default(cuid())
-  email         String          @unique
-  passwordHash  String
-  name          String?
-  role          UserRole        @default(USER)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         UserRole @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  events        Event[]         @relation("OrganizerEvents")
+  events        Event[]        @relation("OrganizerEvents")
   refreshTokens RefreshToken[]
 }
 
@@ -30,37 +30,38 @@ model RefreshToken {
 }
 
 model Event {
-  id                 String             @id @default(cuid())
-  name               String
-  description        String
-  organizerId       String
-  organizer         User               @relation("OrganizerEvents", fields: [organizerId], references: [id])
-  
-  organizerName     String?
-  organizerEmail    String?
-  hostEmail         String?
-  posterEmail       String?
-  guests            String[]           @default([])
-  attendeesEmail    String[]           @default([])
+  id          String @id @default(cuid())
+  userId      String
+  name        String
+  description String
+  organizerId String
+  organizer   User   @relation("OrganizerEvents", fields: [organizerId], references: [id])
 
-  address           String
-  city              String
-  pincode           Int?
-  date              DateTime
-  startTime         String?
-  stopTime          String?
+  organizerName  String?
+  organizerEmail String?
+  hostEmail      String?
+  posterEmail    String?
+  guests         String[] @default([])
+  attendeesEmail String[] @default([])
 
-  sideAttractions   String[]           @default([])
-  allowInstallment  Boolean            @default(false)
-  isPrivate         Boolean            @default(false)
+  address   String
+  city      String
+  pincode   Int?
+  date      DateTime
+  startTime String?
+  stopTime  String?
+
+  sideAttractions  String[] @default([])
+  allowInstallment Boolean  @default(false)
+  isPrivate        Boolean  @default(false)
 
   media             Media[]
   ticketTypes       TicketType[]
   activities        Activity[]
   installmentConfig InstallmentConfig?
 
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Media {
@@ -72,30 +73,30 @@ model Media {
 }
 
 model TicketType {
-  id        String   @id @default(cuid())
-  type      String
-  price     Float
-  quantity  Int
-  booked    Int      @default(0)
-  event     Event    @relation(fields: [eventId], references: [id])
-  eventId   String
+  id       String @id @default(cuid())
+  type     String
+  price    Float
+  quantity Int
+  booked   Int    @default(0)
+  event    Event  @relation(fields: [eventId], references: [id])
+  eventId  String
 }
 
 model Activity {
-  id        String   @id @default(cuid())
-  title     String
-  speaker   String
-  time      String
-  event     Event    @relation(fields: [eventId], references: [id])
-  eventId   String
+  id      String @id @default(cuid())
+  title   String
+  speaker String
+  time    String
+  event   Event  @relation(fields: [eventId], references: [id])
+  eventId String
 }
 
 model InstallmentConfig {
-  id                   String   @id @default(cuid())
+  id                   String @id @default(cuid())
   numberOfInstallments Int
   minPerInstallment    Float
-  event                Event    @relation(fields: [eventId], references: [id])
-  eventId              String   @unique
+  event                Event  @relation(fields: [eventId], references: [id])
+  eventId              String @unique
 }
 
 enum UserRole {

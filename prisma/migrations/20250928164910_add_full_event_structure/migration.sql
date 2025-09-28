@@ -28,6 +28,7 @@ CREATE TABLE "public"."RefreshToken" (
 -- CreateTable
 CREATE TABLE "public"."Event" (
     "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "organizerId" TEXT NOT NULL,
