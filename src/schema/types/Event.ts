@@ -42,24 +42,24 @@ export const EventInput = inputObjectType({
     t.nonNull.string("userId");
     t.nonNull.string("name");
     t.nonNull.string("description");
-    t.nonNull.string("organizer");
-    t.nonNull.string("host_email");
-    t.nonNull.string("organizer_email");
+    t.string("organizer");
+    t.string("organizer_email");
+    t.string("host_email");
+    t.string("posterEmail");
     t.list.string("guests");
-    t.nonNull.string("address");
-    t.nonNull.string("city");
-    t.nonNull.int("pincode");
-    t.nonNull.string("date");
-    t.nonNull.string("start_time");
-    t.nonNull.string("stop_time");
+    t.list.string("attendees_Email");
+    t.string("address");
+    t.string("city");
+    t.int("pincode");
+    t.string("date");
+    t.string("start_time");
+    t.string("stop_time");
     t.list.string("media");
     t.list.string("side_attractions");
-    t.list.field("activities", { type: ActivityInput });
-    t.list.field("ticketTypes", { type: TicketTypeInput });
-    t.nonNull.boolean("allowInstallment");
-    t.field("installmentConfig", { type: InstallmentConfigInput });
-    t.nonNull.string("posterEmail");
-    t.list.string("attendees_Email");
+    t.boolean("allowInstallment");
+    t.field("installmentConfig", { type: "InstallmentConfigInput" });
+    t.list.field("activities", { type: "ActivityInput" });
+    t.list.field("ticketTypes", { type: "TicketTypeInput" });
   },
 });
 
@@ -98,9 +98,11 @@ export const createEvent = mutationField("createEvent", {
   resolve: async (_, { data }, ctx: Context) => {
     return await ctx.prisma.event.create({
       data: {
-        userId: data.userId,
         name: data.name,
         description: data.description,
+        date: new Date(data.date),
+        startTime: data.start_time,
+        stopTime: data.stop_time,
         organizer: data.organizer,
         hostEmail: data.host_email,
         organizerEmail: data.organizer_email,
@@ -108,14 +110,19 @@ export const createEvent = mutationField("createEvent", {
         address: data.address,
         city: data.city,
         pincode: data.pincode,
-        date: new Date(data.date),
-        startTime: data.start_time,
-        stopTime: data.stop_time,
         media: data.media,
         sideAttractions: data.side_attractions,
         allowInstallment: data.allowInstallment,
         posterEmail: data.posterEmail,
         attendeesEmail: data.attendees_Email,
+
+        // ✅ FIX HERE: connect creator relation
+        creator: {
+          connect: {
+            id: data.userId,
+          },
+        },
+
         activities: {
           create: data.activities?.map((a: any) => ({
             title: a.title,
@@ -146,5 +153,6 @@ export const createEvent = mutationField("createEvent", {
         installmentConfig: true,
       },
     });
+
   },
 });
