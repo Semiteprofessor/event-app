@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  name          String?
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  events        Event[]   @relation("OrganizerEvents")
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Event {
+  id              String       @id @default(cuid())
+  name            String
+  description     String
+  organizerId     String
+  organizer       User         @relation("OrganizerEvents", fields: [organizerId], references: [id])
+  address         String
+  city            String
+  pincode         Int?
+  date            DateTime
+  startTime       String?
+  stopTime        String?
+  media           Media[]
+  sideAttractions String[]     @default([])
+  ticketTypes     TicketType[]
+  allowInstallment Boolean     @default(false)
+  installmentConfig Json?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  isPrivate       Boolean      @default(false)
+}
+
+model Media {
+  id       String @id @default(cuid())
+  url      String
+  event    Event  @relation(fields: [eventId], references: [id])
+  eventId  String
+  createdAt DateTime @default(now())
+}
+
+model TicketType {
+  id        String  @id @default(cuid())
+  name      String
+  price     Float
+  limit     Int?
+  booked    Int     @default(0)
+  event     Event   @relation(fields: [eventId], references: [id])
+  eventId   String
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
