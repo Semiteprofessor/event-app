@@ -1,9 +1,20 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
     "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "esModuleInterop": true,
-    "moduleResolution": "node",
-    "outDir": "dist"
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "outDir": "dist",
+    "moduleDetection": "force",
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src"],
+  "ts-node": {
+    "esm": true
   }
 }

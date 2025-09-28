@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Request } from "express";
-import { verifyJwt } from "./lib/jwt";
+import { verifyJwt } from "./lib/jwt.js";
 
 const prisma = new PrismaClient();
 
@@ -9,8 +9,8 @@ export type Context = {
   req: Request;
   user?: { id: string; role: string } | null;
   services: {
-    auth: ReturnType<typeof import("./modules/auth/auth.service").default>;
-    event: ReturnType<typeof import("./modules/event/event.service").default>;
+    auth: ReturnType<typeof import("./modules/auth/auth.service.js").default>;
+    event: ReturnType<typeof import("./modules/event/event.service.js").default>;
   };
 };
 
@@ -32,8 +32,8 @@ export async function createContext({
   }
 
   const services = {
-    auth: (await import("./modules/auth/auth.service")).default({ prisma }),
-    event: (await import("./modules/event/event.service")).default({ prisma }),
+    auth: (await import("./modules/auth/auth.service.js")).default({ prisma }),
+    event: (await import("./modules/event/event.service.js")).default({ prisma }),
   };
 
   return { prisma, req, user, services };

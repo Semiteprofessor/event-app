@@ -1,7 +1,7 @@
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
-import { schema } from "./schema/graphql";
-import { createContext } from "./context";
+import { schema } from "./schema/graphql.js";
+import { createContext } from "./context.js";
 
 export async function createServer() {
   const app = express();

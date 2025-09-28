@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
-import { signJwt } from "../../lib/jwt";
+import { signJwt } from "../../lib/jwt.js";
 
 export default function AuthService({ prisma }: { prisma: PrismaClient }) {
   return {
@@ -36,7 +36,6 @@ export default function AuthService({ prisma }: { prisma: PrismaClient }) {
       const ok = await bcrypt.compare(password, user.passwordHash);
       if (!ok) throw new Error("Invalid credentials");
       const accessToken = signJwt({ sub: user.id, role: user.role });
-      // refresh token logic...
       return { accessToken, refreshToken: "...", user };
     },
   };

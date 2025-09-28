@@ -8,7 +8,7 @@ import {
   intArg,
   booleanArg,
 } from "nexus";
-import { Context } from "../../context";
+import { Context } from "../../context.js";
 
 export const ActivityInput = inputObjectType({
   name: "ActivityInput",

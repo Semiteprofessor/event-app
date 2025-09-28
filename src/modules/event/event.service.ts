@@ -1,10 +1,11 @@
-import { mutationField, nonNull } from "nexus";
-import { Context } from "../../context";
+// src/modules/event/event.mutation.ts
+import { mutationField, nonNull, arg } from "nexus";
+import { Context } from "../../context.js";
 
-export const createEvent = mutationField("createEvent", {
+export const CreateEventMutation = mutationField("createEvent", {
   type: "Event",
   args: {
-    data: nonNull("EventInput"),
+    data: nonNull(arg({ type: "EventInput" })),
   },
   resolve: async (_, { data }, ctx: Context) => {
     return await ctx.prisma.event.create({
@@ -62,7 +63,6 @@ export const createEvent = mutationField("createEvent", {
             }
           : undefined,
       },
-
       include: {
         media: true,
         ticketTypes: true,

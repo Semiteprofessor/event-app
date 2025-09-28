@@ -1,8 +1,8 @@
 import "dotenv/config";
 import http from "http";
-import { createServer } from "./app";
-import { initTracing } from "./lib/tracing";
-import { logger } from "./lib/logger";
+import { createServer } from "./app.js";
+import { initTracing } from "./lib/tracing.js";
+import { logger } from "./lib/logger.js";
 import { context, trace } from "@opentelemetry/api";
 
 async function start() {
