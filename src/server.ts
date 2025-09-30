@@ -13,10 +13,19 @@ async function start(): Promise<void> {
 
     const rootApp = express();
 
+    rootApp.use(express.json());
+    rootApp.use(express.urlencoded({ extended: true }));
+
     rootApp.use(app);
 
     rootApp.use("/admin/queues", dashboardRouter);
 
+    // ✅ Health check route
+    rootApp.get("/health", (req, res) => {
+      res.status(200).json({ status: "ok" });
+    });
+
+    // ✅ Wrap server with tracing logic
     const server = http.createServer((req, res) => {
       const startTime = Date.now();
 
@@ -30,6 +39,7 @@ async function start(): Promise<void> {
 
       res.on("finish", () => {
         const duration = Date.now() - startTime;
+
         logger.info(
           {
             method: req.method,
@@ -42,6 +52,7 @@ async function start(): Promise<void> {
         );
 
         span.setAttribute("http.status_code", res.statusCode);
+        span.setAttribute("http.response_time_ms", duration);
         span.end();
       });
 
@@ -50,13 +61,14 @@ async function start(): Promise<void> {
       });
     });
 
+    // ✅ Start the server
     server.listen(port, () => {
-      logger.info({ port }, `🚀 Server running at: http://localhost:${port}`);
-      logger.info(
-        `📊 BullMQ Dashboard available at: http://localhost:${port}/admin/queues`
-      );
+      logger.info(`🚀 Server running at: http://localhost:${port}`);
+      logger.info(`📊 BullMQ Dashboard: http://localhost:${port}/admin/queues`);
+      logger.info(`💓 Health Check: http://localhost:${port}/health`);
     });
 
+    // ✅ Handle common process events
     process.on("unhandledRejection", (reason: unknown) => {
       logger.error({ reason }, "⚠️ Unhandled Promise Rejection");
     });

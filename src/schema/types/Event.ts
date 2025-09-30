@@ -10,31 +10,32 @@ import {
 } from "nexus";
 import { Context } from "../../context.js";
 
-export const ActivityInput = inputObjectType({
-  name: "ActivityInput",
+export const Activity = objectType({
+  name: "Activity",
   definition(t) {
-    t.nonNull.string("title");
-    t.nonNull.string("speaker");
-    t.nonNull.string("time");
+    t.string("title");
+    t.string("speaker");
+    t.string("time");
   },
 });
 
-export const TicketTypeInput = inputObjectType({
-  name: "TicketTypeInput",
+export const TicketType = objectType({
+  name: "TicketType",
   definition(t) {
-    t.nonNull.string("type");
-    t.nonNull.float("price");
-    t.nonNull.int("quantity");
+    t.string("type");
+    t.float("price");
+    t.int("quantity");
   },
 });
 
-export const InstallmentConfigInput = inputObjectType({
-  name: "InstallmentConfigInput",
+export const InstallmentConfig = objectType({
+  name: "InstallmentConfig",
   definition(t) {
-    t.nonNull.int("numberOfInstallments");
-    t.nonNull.float("minPerInstallment");
+    t.int("numberOfInstallments");
+    t.float("minPerInstallment");
   },
 });
+
 
 export const EventInput = inputObjectType({
   name: "EventInput",
@@ -54,41 +55,15 @@ export const EventInput = inputObjectType({
     t.string("date");
     t.string("start_time");
     t.string("stop_time");
+    t.list.field("activities", { type: "ActivityInput" });
+    t.list.field("ticketTypes", { type: "TicketTypeInput" });
+    t.field("installmentConfig", { type: "InstallmentConfigInput" });
     t.list.string("media");
     t.list.string("side_attractions");
     t.boolean("allowInstallment");
-    t.field("installmentConfig", { type: "InstallmentConfigInput" });
-    t.list.field("activities", { type: "ActivityInput" });
-    t.list.field("ticketTypes", { type: "TicketTypeInput" });
   },
 });
 
-export const Event = objectType({
-  name: "Event",
-  definition(t) {
-    t.string("id");
-    t.string("name");
-    t.string("description");
-    t.string("organizer");
-    t.string("hostEmail");
-    t.string("organizerEmail");
-    t.list.string("guests");
-    t.string("address");
-    t.string("city");
-    t.int("pincode");
-    t.string("date");
-    t.string("startTime");
-    t.string("stopTime");
-    t.list.string("media");
-    t.list.string("sideAttractions");
-    t.list.field("activities", { type: "Activity" });
-    t.list.field("ticketTypes", { type: "TicketType" });
-    t.boolean("allowInstallment");
-    t.field("installmentConfig", { type: "InstallmentConfig" });
-    t.string("posterEmail");
-    t.list.string("attendeesEmail");
-  },
-});
 
 export const createEvent = mutationField("createEvent", {
   type: "Event",
