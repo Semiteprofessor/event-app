@@ -1,12 +1,12 @@
 import "dotenv/config";
 import http from "http";
 import { createServer } from "./app.js";
-import { initTracing } from "./lib/tracing.js";
+// import { initTracing } from "./lib/tracing.js";
 import { logger } from "./lib/logger.js";
 import { context, trace } from "@opentelemetry/api";
 
 async function start() {
-  initTracing();
+  // initTracing();
 
   const app = await createServer();
   const port = process.env.PORT ?? 4000;
