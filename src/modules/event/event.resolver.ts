@@ -1,6 +1,5 @@
-
 import { mutationField, nonNull, arg } from "nexus";
-import EventService from "./event.service.js";
+import { EventService } from "./event.service.js";
 import { Context } from "../../context.js";
 
 export const createEvent = mutationField("createEvent", {
@@ -9,7 +8,7 @@ export const createEvent = mutationField("createEvent", {
     data: nonNull(arg({ type: "EventInput" })),
   },
   resolve: async (_, { data }, ctx: Context) => {
-    const eventService = EventService({ prisma: ctx.prisma });
-    return eventService.createEvent(data);
+    const eventService = EventService(ctx.prisma);
+    return await eventService.createEvent(data);
   },
 });
