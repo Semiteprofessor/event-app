@@ -1,5 +1,5 @@
 import { Worker, Job } from "bullmq";
-import { redis } from "../redis";
+import { redis } from "../redis.js";
 
 export const emailWorker = new Worker(
   "emailQueue",
