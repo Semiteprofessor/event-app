@@ -4,12 +4,14 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-  "worker:email": "ts-node src/lib/workers/emailWorker.ts",
-  "dev": "node --loader ts-node/esm src/server.ts",
-  "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests",
-  "test:watch": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --watch",
-  "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage"
-},
+    "worker:email": "ts-node src/lib/workers/emailWorker.ts",
+    "dev": "node --loader ts-node/esm src/server.ts",
+    "start": "node dist/main",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests",
+    "test:watch": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "build": "tsc"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
