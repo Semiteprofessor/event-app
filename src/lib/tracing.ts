@@ -1,34 +1,34 @@
 // import { NodeSDK } from "@opentelemetry/sdk-node";
 // import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
-// import {
-//   ConsoleSpanExporter,
-//   SimpleSpanProcessor,
-// } from "@opentelemetry/sdk-trace-base";
+// import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 // import { Resource } from "@opentelemetry/resources";
-// import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
+// import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
 
 // let sdk: NodeSDK | null = null;
 
 // export function initTracing() {
 //   if (sdk) return;
 
+//   const traceExporter = new OTLPTraceExporter({
+//     url: process.env.OTLP_URL || "http://localhost:4318/v1/traces",
+//   });
+
 //   sdk = new NodeSDK({
+//     traceExporter,
 //     resource: new Resource({
-//       [ATTR_SERVICE_NAME]: "my-service", // 👈 change this to your service name
+//       [SemanticResourceAttributes.SERVICE_NAME]: "world-class-backend",
+//       [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]:
+//         process.env.NODE_ENV || "development",
 //     }),
-//     traceExporter: new ConsoleSpanExporter(),
 //     instrumentations: [getNodeAutoInstrumentations()],
 //   });
 
 //   sdk.start();
 
 //   process.on("SIGTERM", () => {
-//     sdk
-//       ?.shutdown()
-//       .then(() => console.log("✅ Tracing terminated"))
-//       .catch((err) => console.error("❌ Error terminating tracing", err))
-//       .finally(() => process.exit(0));
+//     sdk?.shutdown().then(
+//       () => console.log("Tracing terminated"),
+//       (err) => console.error("Error terminating tracing", err)
+//     );
 //   });
-
-//   console.log("📡 OpenTelemetry tracing initialized");
 // }
