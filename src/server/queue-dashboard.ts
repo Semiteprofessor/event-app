@@ -1,4 +1,4 @@
-import express from "express";
+import { Router } from "express";
 import { createBullBoard } from "@bull-board/api";
 import { ExpressAdapter } from "@bull-board/express";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
@@ -12,4 +12,4 @@ createBullBoard({
 
 serverAdapter.setBasePath("/admin/queues");
 
-export const dashboardRouter = serverAdapter.getRouter();
+export const dashboardRouter: Router = serverAdapter.getRouter();

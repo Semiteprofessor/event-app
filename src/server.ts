@@ -1,63 +1,79 @@
 import "dotenv/config";
 import http from "http";
+import express from "express";
 import { createServer } from "./app.js";
-// import { initTracing } from "./lib/tracing.js";
 import { logger } from "./lib/logger.js";
-import { context, trace } from "@opentelemetry/api";
+import { context, trace, Span } from "@opentelemetry/api";
+import { dashboardRouter } from "./server/queue-dashboard.js";
 
-async function start() {
-  // initTracing();
+async function start(): Promise<void> {
+  try {
+    const app = await createServer();
+    const port = Number(process.env.PORT) || 4000;
 
-  const app = await createServer();
-  const port = process.env.PORT ?? 4000;
+    const rootApp = express();
 
-  const server = http.createServer((req, res) => {
-    const start = Date.now();
+    rootApp.use(app);
 
-    const tracer = trace.getTracer("http-server");
-    const span = tracer.startSpan("http_request", {
-      attributes: {
-        "http.method": req.method,
-        "http.url": req.url,
-      },
-    });
+    rootApp.use("/admin/queues", dashboardRouter);
 
-    res.on("finish", () => {
-      const duration = Date.now() - start;
-      logger.info(
-        {
-          method: req.method,
-          url: req.url,
-          statusCode: res.statusCode,
-          durationMs: duration,
-          traceId: span.spanContext().traceId,
+    const server = http.createServer((req, res) => {
+      const startTime = Date.now();
+
+      const tracer = trace.getTracer("http-server");
+      const span: Span = tracer.startSpan("http_request", {
+        attributes: {
+          "http.method": req.method || "UNKNOWN",
+          "http.url": req.url || "UNKNOWN",
         },
-        "Handled request"
+      });
+
+      res.on("finish", () => {
+        const duration = Date.now() - startTime;
+        logger.info(
+          {
+            method: req.method,
+            url: req.url,
+            statusCode: res.statusCode,
+            durationMs: duration,
+            traceId: span.spanContext().traceId,
+          },
+          "✅ Request handled"
+        );
+
+        span.setAttribute("http.status_code", res.statusCode);
+        span.end();
+      });
+
+      context.with(trace.setSpan(context.active(), span), () => {
+        rootApp(req, res);
+      });
+    });
+
+    server.listen(port, () => {
+      logger.info({ port }, `🚀 Server running at: http://localhost:${port}`);
+      logger.info(
+        `📊 BullMQ Dashboard available at: http://localhost:${port}/admin/queues`
       );
-      span.setAttribute("http.status_code", res.statusCode);
-      span.end();
     });
 
-    context.with(trace.setSpan(context.active(), span), () => {
-      app(req, res);
+    process.on("unhandledRejection", (reason: unknown) => {
+      logger.error({ reason }, "⚠️ Unhandled Promise Rejection");
     });
-  });
 
-  server.listen(port, () => {
-    logger.info({ port }, `🚀 Server listening on http://localhost:${port}`);
-  });
+    process.on("uncaughtException", (err: Error) => {
+      logger.fatal({ err }, "💥 Uncaught Exception - shutting down...");
+      process.exit(1);
+    });
 
-  process.on("unhandledRejection", (err) => {
-    logger.error({ err }, "Unhandled Promise Rejection");
-  });
-
-  process.on("uncaughtException", (err) => {
-    logger.fatal({ err }, "Uncaught Exception");
+    process.on("SIGTERM", () => {
+      logger.info("🛑 SIGTERM received. Gracefully shutting down...");
+      server.close(() => process.exit(0));
+    });
+  } catch (err) {
+    logger.fatal({ err }, "❌ Failed to start server");
     process.exit(1);
-  });
+  }
 }
 
-start().catch((err) => {
-  logger.fatal({ err }, "Failed to start server");
-  process.exit(1);
-});
+start();
