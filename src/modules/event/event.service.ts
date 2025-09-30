@@ -75,7 +75,7 @@
 // src/modules/event/event.service.ts
 import { PrismaClient } from "@prisma/client";
 
-export function EventService(prisma: PrismaClient) {
+export default function EventService(prisma: PrismaClient) {
   return {
     async createEvent(input: any) {
       return await prisma.event.create({
