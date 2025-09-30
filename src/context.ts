@@ -4,7 +4,6 @@ import { verifyJwt } from "./lib/jwt.js";
 
 const prisma = new PrismaClient();
 
-// Infer types from the default exported service factories
 type AuthService = ReturnType<
   typeof import("./modules/auth/auth.service.js").default
 >;
@@ -41,7 +40,6 @@ export async function createContext({
     }
   }
 
-  // 📦 Dynamically import services
   const authServiceModule = await import("./modules/auth/auth.service.js");
   const eventServiceModule = await import("./modules/event/event.service.js");
 

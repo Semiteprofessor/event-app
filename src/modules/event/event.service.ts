@@ -1,3 +1,5 @@
+import { PrismaClient } from "@prisma/client";
+
 // import { mutationField, nonNull, arg } from "nexus";
 // import { Context } from "../../context.js";
 
@@ -72,10 +74,8 @@
 //   },
 // });
 
-// src/modules/event/event.service.ts
-import { PrismaClient } from "@prisma/client";
 
-export default function EventService(prisma: PrismaClient) {
+export default function EventService({ prisma }: { prisma: PrismaClient }) {
   return {
     async createEvent(input: any) {
       return await prisma.event.create({
@@ -124,8 +124,7 @@ export default function EventService(prisma: PrismaClient) {
                 create: {
                   numberOfInstallments:
                     input.installmentConfig.numberOfInstallments,
-                  minPerInstallment:
-                    input.installmentConfig.minPerInstallment,
+                  minPerInstallment: input.installmentConfig.minPerInstallment,
                 },
               }
             : undefined,
