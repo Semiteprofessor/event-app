@@ -214,3 +214,25 @@ model SubCategory {
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
 }
+
+model Brand {
+  id                String      @id @default(cuid())
+
+  // Flattened logo fields
+  logoId            String
+  logoUrl           String
+  logoBlurDataURL   String
+
+  name              String
+  metaTitle         String
+  description       String
+  metaDescription   String
+  slug              String      @unique
+  status            String
+
+  // Optional relation: one brand → many products
+  products          Product[]
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
