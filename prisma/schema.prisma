@@ -142,3 +142,14 @@ model ReviewImage {
   reviewId    String
   review      ProductReview   @relation(fields: [reviewId], references: [id])
 }
+
+model Review {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+
+  rating       Int
+  review       String
+  designation  String
+  createdAt    DateTime @default(now())
+}
