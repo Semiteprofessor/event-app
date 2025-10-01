@@ -50,6 +50,7 @@ model User {
   Review        Review[]
   Order         Order[]
   Product       Product[]
+  followingShops Shop[] @relation("ShopFollowers")
 
 }
 
@@ -268,6 +269,8 @@ model Shop {
   followers User[]    @relation("ShopFollowers")
   products  Product[]
 
+  payments  Payment[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -301,7 +304,8 @@ model Order {
   id             String        @id @default(cuid())
   paymentMethod  PaymentMethod
   orderNo        String
-  paymentId      String?
+  paymentId String
+  payment   Payment @relation("PaymentOrders", fields: [paymentId], references: [id])
   subTotal       Float
   total          Float
   totalItems     Int
@@ -312,6 +316,8 @@ model Order {
   status         OrderStatus?
   items          Json?
   note           String?
+
+  
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -420,4 +426,37 @@ model Notification {
   paymentMethod PaymentMethod
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  shopId          String
+  shop            Shop          @relation(fields: [shopId], references: [id])
+
+  orders          Order[]       @relation("PaymentOrders")
+
+  total           Float
+  totalCommission Float
+  totalIncome     Float
+  status          PaymentStatus @default(pending)
+  paidAt          DateTime?
+  tip             Float?
+  type            PaymentType   @default(monthly)
+  date            DateTime      @default(now())
+  message         String?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+
+enum PaymentStatus {
+  pending
+  paid
+  hold
+}
+
+enum PaymentType {
+  monthly
+  other
 }
