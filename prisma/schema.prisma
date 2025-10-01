@@ -8,20 +8,59 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String?
-  role         UserRole @default(USER)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                  String       @id @default(cuid())
+  firstName          String
+  lastName           String
+  email              String        @unique
+  password           String
+  gender             Gender
+  coverId            String?
+  coverUrl           String?
+  coverBlurDataURL   String?
 
-  eventsOrganized Event[] @relation("OrganizerEvents")
+  wishlist           Product[]     @relation("Wishlist")
+  orders             Order[]       @relation("UserOrders")
+  shop               Shop?         @relation(fields: [shopId], references: [id])
+  shopId            String?
 
-  eventsCreated Event[] @relation("CreatorEvents")
+  recentProducts     Product[]     @relation("RecentProducts")
+  likedProducts      Product[]     @relation("LikedProducts")
+  purchasedProducts  Product[]     @relation("PurchasedProducts")
 
-  refreshTokens RefreshToken[]
+  phone             String
+  status            String?
+  address           String?
+  city              String?
+  zip               String?
+  country           String?
+  state             String?
+  about            String?
+
+  isVerified        Boolean        @default(false)
+  otp              String
+  lastOtpSentAt    DateTime?
+  commission       Float?
+
+  role             Role
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 }
+
+
+enum Gender {
+  male
+  female
+  other
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  USER
+  VENDOR
+}
+
 
 model RefreshToken {
   id        String   @id @default(cuid())

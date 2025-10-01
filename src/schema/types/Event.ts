@@ -133,7 +133,7 @@ export const createEvent = mutationField("createEvent", {
         description: event.description,
         city: event.city,
         date: event.date,
-        organizer: event.organizer,
+        organizer: event.userId,
       },
     });
 
