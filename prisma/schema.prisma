@@ -48,10 +48,9 @@ model User {
   RefreshToken  RefreshToken[]
   ProductReview ProductReview[]
   Review        Review[]
-  Shop          Shop?           @relation(fields: [shopId], references: [id])
   Order         Order[]
   Product       Product[]
-  
+
 }
 
 enum Gender {
@@ -112,10 +111,11 @@ model Product {
   colors String[]
   sizes  String[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  User      User?    @relation(fields: [userId], references: [id])
-  userId    String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  User              User?               @relation(fields: [userId], references: [id])
+  userId            String?
+  ProductOnCompaign ProductOnCompaign[]
 }
 
 model ProductImage {
@@ -230,21 +230,17 @@ model Brand {
 model Shop {
   id String @id @default(cuid())
 
-  // 🔗 Vendor relation
   vendorId String
   vendor   User   @relation(fields: [vendorId], references: [id])
 
-  // 🖼️ Logo (flattened)
   logoId          String
   logoUrl         String
   logoBlurDataURL String
 
-  // 🖼️ Cover (flattened)
   coverId          String
   coverUrl         String
   coverBlurDataURL String
 
-  // 📊 Basic Info
   title           String
   metaTitle       String
   description     String
@@ -322,5 +318,51 @@ model Order {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  User      User     @relation(fields: [userId], references: [id])
 }
+
+enum DiscountType {
+  fixed
+  percent
+}
+
+enum CompaignStatus {
+  enable
+  disable
+}
+
+model Compaign {
+  id            String @id @default(cuid())
+  coverId       String
+  coverUrl      String
+  coverBlurData String
+
+  name            String @db.VarChar(100)
+  metaTitle       String @db.VarChar(100)
+  description     String @db.VarChar(500)
+  metaDescription String @db.VarChar(200)
+  slug            String @unique
+
+  startDate DateTime
+  endDate   DateTime
+
+  discountType DiscountType
+  discount     Float
+  status       CompaignStatus @default(enable)
+
+  // relation: One campaign -> Many products
+  products ProductOnCompaign[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProductOnCompaign {
+  compaignId String
+  productId  String
+
+  compaign Compaign @relation(fields: [compaignId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@id([compaignId, productId])
+}
+
