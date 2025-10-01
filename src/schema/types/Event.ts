@@ -1,4 +1,5 @@
 import { objectType, inputObjectType, mutationField, nonNull } from "nexus";
+import { esClient } from "../../lib/elasticsearch.js";
 import { Context } from "../../context.js";
 
 export const InstallmentConfig = objectType({
@@ -69,7 +70,7 @@ export const createEvent = mutationField("createEvent", {
     data: nonNull("EventInput"),
   },
   resolve: async (_, { data }, ctx: Context) => {
-    return await ctx.prisma.event.create({
+    const event = await ctx.prisma.event.create({
       data: {
         name: data.name,
         description: data.description,
@@ -90,9 +91,7 @@ export const createEvent = mutationField("createEvent", {
         attendeesEmail: data.attendees_Email,
 
         creator: {
-          connect: {
-            id: data.userId,
-          },
+          connect: { id: data.userId },
         },
 
         activities: {
@@ -125,5 +124,19 @@ export const createEvent = mutationField("createEvent", {
         installmentConfig: true,
       },
     });
+
+    await esClient.index({
+      index: "events",
+      id: event.id,
+      document: {
+        name: event.name,
+        description: event.description,
+        city: event.city,
+        date: event.date,
+        organizer: event.organizer,
+      },
+    });
+
+    return event;
   },
 });
