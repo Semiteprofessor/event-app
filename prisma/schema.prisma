@@ -170,3 +170,24 @@ model Brand {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+model Category {
+  id                String         @id @default(cuid())
+  name              String         @db.VarChar(100)
+  metaTitle         String         @db.VarChar(100)
+  description       String         @db.VarChar(500)
+  metaDescription   String         @db.VarChar(200)
+  slug              String         @unique
+  status            String
+
+  // Cover image (flattened from nested object)
+  coverId           String
+  coverUrl          String
+  coverBlurDataURL  String
+
+  // Relations
+  subCategories     SubCategory[]  // 1:N relation with SubCategory
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
