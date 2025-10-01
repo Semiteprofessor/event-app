@@ -1,38 +1,38 @@
 import { objectType, inputObjectType, mutationField, nonNull } from "nexus";
 import { Context } from "../../context.js";
 
-export const Activity = objectType({
-  name: "Activity",
-  definition(t) {
-    t.string("title");
-    t.string("speaker");
-    t.string("time");
-  },
-});
-
-export const ActivityInput = inputObjectType({
-  name: "ActivityInput",
-  definition(t) {
-    t.string("title");
-    t.string("speaker");
-    t.string("time");
-  },
-});
-
-export const TicketType = objectType({
-  name: "TicketType",
-  definition(t) {
-    t.string("type");
-    t.float("price");
-    t.int("quantity");
-  },
-});
-
 export const InstallmentConfig = objectType({
   name: "InstallmentConfig",
   definition(t) {
     t.int("numberOfInstallments");
     t.float("minPerInstallment");
+  },
+});
+
+export const Event = objectType({
+  name: "Event",
+  definition(t) {
+    t.nonNull.string("userId");
+    t.nonNull.string("name");
+    t.nonNull.string("description");
+    t.string("organizer");
+    t.string("organizer_email");
+    t.string("host_email");
+    t.string("posterEmail");
+    t.list.string("guests");
+    t.list.string("attendees_Email");
+    t.string("address");
+    t.string("city");
+    t.int("pincode");
+    t.string("date");
+    t.string("start_time");
+    t.string("stop_time");
+    t.list.field("activities", { type: "ActivityInput" });
+    t.list.field("ticketTypes", { type: "TicketTypeInput" });
+    t.field("installmentConfig", { type: "InstallmentConfigInput" });
+    t.list.string("media");
+    t.list.string("side_attractions");
+    t.boolean("allowInstallment");
   },
 });
 
