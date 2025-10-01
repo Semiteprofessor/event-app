@@ -299,3 +299,45 @@ enum ShopStatus {
   blocked
   rejected
 }
+
+enum PaymentMethod {
+  Paystack
+  Flutterwave
+  Stripe
+  PayPal
+  COD
+}
+
+enum OrderStatus {
+  pending
+  on_the_way
+  delivered
+  canceled
+  returned
+}
+
+// Models
+model Order {
+  id             String        @id @default(cuid())
+  paymentMethod  PaymentMethod
+  orderNo        String
+  paymentId      String?
+  subTotal       Float
+  total          Float
+  totalItems     Int
+  shipping       Float
+  discount       Float?
+  currency       String
+  conversionRate Float
+  status         OrderStatus?
+  items          Json?
+  note           String?
+
+  // relation to User
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
