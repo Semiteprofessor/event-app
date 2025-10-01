@@ -1,6 +1,6 @@
 import { makeSchema } from "nexus";
 import * as path from "path";
-import * as types from "./types/Event.js";
+import * as types from "./types/index.js";
 
 export const schema = makeSchema({
   types,

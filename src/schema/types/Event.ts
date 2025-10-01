@@ -27,9 +27,9 @@ export const Event = objectType({
     t.string("date");
     t.string("start_time");
     t.string("stop_time");
-    t.list.field("activities", { type: "ActivityInput" });
-    t.list.field("ticketTypes", { type: "TicketTypeInput" });
-    t.field("installmentConfig", { type: "InstallmentConfigInput" });
+    t.list.field("activities", { type: "Activity" });
+    t.list.field("ticketTypes", { type: "TicketType" });
+    t.field("installmentConfig", { type: "InstallmentConfig" });
     t.list.string("media");
     t.list.string("side_attractions");
     t.boolean("allowInstallment");
