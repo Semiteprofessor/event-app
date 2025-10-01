@@ -401,3 +401,23 @@ model Currency {
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
 }
+
+model Newsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id            String   @id @default(cuid())
+  opened        Boolean
+  title         String
+  orderId       String
+  coverId       String?     // cover._id (optional)
+  coverUrl      String?     // cover.url (optional)
+  city          String
+  paymentMethod PaymentMethod
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
