@@ -384,3 +384,20 @@ model CouponCode {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 }
+
+enum CurrencyStatus {
+  active
+  disabled
+}
+
+model Currency {
+  id        String          @id @default(cuid())
+  name      String
+  code      String          @unique
+  country   String
+  status    CurrencyStatus  @default(active)
+  rate      Float?
+
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
