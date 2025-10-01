@@ -43,8 +43,15 @@ model User {
 
   role Role
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  RefreshToken  RefreshToken[]
+  ProductReview ProductReview[]
+  Review        Review[]
+  Shop          Shop?           @relation(fields: [shopId], references: [id])
+  Order         Order[]
+  Product       Product[]
+  
 }
 
 enum Gender {
@@ -107,6 +114,8 @@ model Product {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?
 }
 
 model ProductImage {
@@ -154,23 +163,6 @@ model Review {
   createdAt   DateTime @default(now())
 }
 
-model Brand {
-  id              String @id @default(cuid())
-  name            String
-  metaTitle       String
-  description     String
-  metaDescription String
-  slug            String @unique
-  status          String
-
-  logoId          String
-  logoUrl         String
-  logoBlurDataURL String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 model Category {
   id              String @id @default(cuid())
   name            String @db.VarChar(100)
@@ -180,22 +172,20 @@ model Category {
   slug            String @unique
   status          String
 
-  // Cover image (flattened from nested object)
   coverId          String
   coverUrl         String
   coverBlurDataURL String
 
-  // Relations
   subCategories SubCategory[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Product   Product[]
 }
 
 model SubCategory {
   id String @id @default(cuid())
 
-  // Cover image (flattened)
   coverId          String
   coverUrl         String
   coverBlurDataURL String
@@ -207,12 +197,12 @@ model SubCategory {
   slug            String
   status          String
 
-  // Relation to Category
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Product   Product[]
 }
 
 model Brand {
@@ -263,27 +253,22 @@ model Shop {
   phone           String  @unique
   website         String?
 
-  // ✅ Approval
   approved   Boolean   @default(false)
   approvedAt DateTime?
 
-  // 📈 Status
   status  ShopStatus
   message String?
 
-  // 📍 Address
   country       String
   city          String
   state         String
   streetAddress String
 
-  // 🏦 Payment Info
   paymentHolderName  String
   paymentHolderEmail String
   paymentBankName    String
   paymentAccountNo   Int
 
-  // 📊 Relations
   followers User[]    @relation("ShopFollowers")
   products  Product[]
 
@@ -316,7 +301,6 @@ enum OrderStatus {
   returned
 }
 
-// Models
 model Order {
   id             String        @id @default(cuid())
   paymentMethod  PaymentMethod
@@ -333,11 +317,10 @@ model Order {
   items          Json?
   note           String?
 
-  // relation to User
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
-  // timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  User      User     @relation(fields: [userId], references: [id])
 }
