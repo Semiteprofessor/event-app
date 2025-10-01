@@ -153,3 +153,20 @@ model Review {
   designation  String
   createdAt    DateTime @default(now())
 }
+
+model Brand {
+  id              String   @id @default(cuid())
+  name            String
+  metaTitle       String
+  description     String
+  metaDescription String
+  slug            String   @unique
+  status          String
+
+  logoId          String
+  logoUrl         String
+  logoBlurDataURL String
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
