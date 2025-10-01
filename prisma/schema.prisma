@@ -366,3 +366,21 @@ model ProductOnCompaign {
   @@id([compaignId, productId])
 }
 
+enum CouponType {
+  percent
+  fixed
+}
+
+model CouponCode {
+  id           String      @id @default(cuid())
+  name         String
+  code         String      @unique
+  discount     Float
+  expire       DateTime    @default(now())
+  description  String?
+  type         CouponType
+  usedBy       String[]   
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
