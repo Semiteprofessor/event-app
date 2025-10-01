@@ -17,6 +17,9 @@ async function start(): Promise<void> {
     rootApp.use(express.urlencoded({ extended: true }));
 
     rootApp.use(app);
+    rootApp.use("/", (req, res) => {
+      res.send("Server is up and running");
+    });
 
     rootApp.use("/admin/queues", dashboardRouter);
 
