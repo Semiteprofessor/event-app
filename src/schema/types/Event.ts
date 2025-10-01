@@ -1,17 +1,17 @@
-import {
-  objectType,
-  inputObjectType,
-  mutationField,
-  nonNull,
-  list,
-  stringArg,
-  intArg,
-  booleanArg,
-} from "nexus";
+import { objectType, inputObjectType, mutationField, nonNull } from "nexus";
 import { Context } from "../../context.js";
 
 export const Activity = objectType({
   name: "Activity",
+  definition(t) {
+    t.string("title");
+    t.string("speaker");
+    t.string("time");
+  },
+});
+
+export const ActivityInput = inputObjectType({
+  name: "ActivityInput",
   definition(t) {
     t.string("title");
     t.string("speaker");
@@ -35,7 +35,6 @@ export const InstallmentConfig = objectType({
     t.float("minPerInstallment");
   },
 });
-
 
 export const EventInput = inputObjectType({
   name: "EventInput",
@@ -63,7 +62,6 @@ export const EventInput = inputObjectType({
     t.boolean("allowInstallment");
   },
 });
-
 
 export const createEvent = mutationField("createEvent", {
   type: "Event",
@@ -127,6 +125,5 @@ export const createEvent = mutationField("createEvent", {
         installmentConfig: true,
       },
     });
-
   },
 });
