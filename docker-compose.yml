@@ -1,4 +1,4 @@
-version: "3"
+# version: "3"
 
 services:
   postgres:
@@ -16,7 +16,7 @@ services:
 
   redis:
     container_name: redis_container
-    image: redis:alpine
+    image: redis:7.2-alpine
     restart: always
     ports:
       - "6379:6379"
@@ -24,13 +24,5 @@ services:
     volumes:
       - ./docker-volumes/cache:/data
 
-  # api:
-  #   build: .
-  #   env_file: .env
-  #   depends_on:
-  #     - db
-  #     - redis
-  #   ports:
-  #     - "4000:4000"
 volumes:
   dbdata:
