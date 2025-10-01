@@ -119,120 +119,183 @@ model ProductImage {
 }
 
 model ProductReview {
-  id           String               @id @default(cuid())
-  userId       String
-  user         User                 @relation(fields: [userId], references: [id])
-  productId    String
-  product      Product              @relation(fields: [productId], references: [id])
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
 
-  review       String
-  rating       Int
-  isPurchased  Boolean
+  review      String
+  rating      Int
+  isPurchased Boolean
 
-  images       ReviewImage[]
+  images ReviewImage[]
 
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ReviewImage {
-  id          String          @id @default(cuid())
+  id          String        @id @default(cuid())
   url         String
   blurDataURL String
   reviewId    String
-  review      ProductReview   @relation(fields: [reviewId], references: [id])
+  review      ProductReview @relation(fields: [reviewId], references: [id])
 }
 
 model Review {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id])
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  rating       Int
-  review       String
-  designation  String
-  createdAt    DateTime @default(now())
+  rating      Int
+  review      String
+  designation String
+  createdAt   DateTime @default(now())
 }
 
 model Brand {
-  id              String   @id @default(cuid())
+  id              String @id @default(cuid())
   name            String
   metaTitle       String
   description     String
   metaDescription String
-  slug            String   @unique
+  slug            String @unique
   status          String
 
   logoId          String
   logoUrl         String
   logoBlurDataURL String
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Category {
-  id                String         @id @default(cuid())
-  name              String         @db.VarChar(100)
-  metaTitle         String         @db.VarChar(100)
-  description       String         @db.VarChar(500)
-  metaDescription   String         @db.VarChar(200)
-  slug              String         @unique
-  status            String
+  id              String @id @default(cuid())
+  name            String @db.VarChar(100)
+  metaTitle       String @db.VarChar(100)
+  description     String @db.VarChar(500)
+  metaDescription String @db.VarChar(200)
+  slug            String @unique
+  status          String
 
   // Cover image (flattened from nested object)
-  coverId           String
-  coverUrl          String
-  coverBlurDataURL  String
+  coverId          String
+  coverUrl         String
+  coverBlurDataURL String
 
   // Relations
-  subCategories     SubCategory[] 
+  subCategories SubCategory[]
 
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model SubCategory {
-  id                String     @id @default(cuid())
+  id String @id @default(cuid())
 
   // Cover image (flattened)
-  coverId           String
-  coverUrl          String
-  coverBlurDataURL  String
+  coverId          String
+  coverUrl         String
+  coverBlurDataURL String
 
-  name              String     @db.VarChar(100)
-  metaTitle         String     @db.VarChar(100)
-  description       String     @db.VarChar(500)
-  metaDescription   String     @db.VarChar(200)
-  slug              String
-  status            String
+  name            String @db.VarChar(100)
+  metaTitle       String @db.VarChar(100)
+  description     String @db.VarChar(500)
+  metaDescription String @db.VarChar(200)
+  slug            String
+  status          String
 
   // Relation to Category
-  categoryId        String
-  category          Category   @relation(fields: [categoryId], references: [id])
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
 
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Brand {
-  id                String      @id @default(cuid())
+  id String @id @default(cuid())
 
   // Flattened logo fields
-  logoId            String
-  logoUrl           String
-  logoBlurDataURL   String
+  logoId          String
+  logoUrl         String
+  logoBlurDataURL String
 
-  name              String
-  metaTitle         String
-  description       String
-  metaDescription   String
-  slug              String      @unique
-  status            String
+  name            String
+  metaTitle       String
+  description     String
+  metaDescription String
+  slug            String @unique
+  status          String
 
   // Optional relation: one brand → many products
-  products          Product[]
+  products Product[]
 
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Shop {
+  id String @id @default(cuid())
+
+  // 🔗 Vendor relation
+  vendorId String
+  vendor   User   @relation(fields: [vendorId], references: [id])
+
+  // 🖼️ Logo (flattened)
+  logoId          String
+  logoUrl         String
+  logoBlurDataURL String
+
+  // 🖼️ Cover (flattened)
+  coverId          String
+  coverUrl         String
+  coverBlurDataURL String
+
+  // 📊 Basic Info
+  title           String
+  metaTitle       String
+  description     String
+  metaDescription String
+  slug            String  @unique
+  phone           String  @unique
+  website         String?
+
+  // ✅ Approval
+  approved   Boolean   @default(false)
+  approvedAt DateTime?
+
+  // 📈 Status
+  status  ShopStatus
+  message String?
+
+  // 📍 Address
+  country       String
+  city          String
+  state         String
+  streetAddress String
+
+  // 🏦 Payment Info
+  paymentHolderName  String
+  paymentHolderEmail String
+  paymentBankName    String
+  paymentAccountNo   Int
+
+  // 📊 Relations
+  followers User[]    @relation("ShopFollowers")
+  products  Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ShopStatus {
+  approved
+  pending
+  in_review
+  action_required
+  blocked
+  rejected
 }
