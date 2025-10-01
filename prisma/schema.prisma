@@ -8,45 +8,44 @@ datasource db {
 }
 
 model User {
-  id                  String       @id @default(cuid())
-  firstName          String
-  lastName           String
-  email              String        @unique
-  password           String
-  gender             Gender
-  coverId            String?
-  coverUrl           String?
-  coverBlurDataURL   String?
+  id               String  @id @default(cuid())
+  firstName        String
+  lastName         String
+  email            String  @unique
+  password         String
+  gender           Gender
+  coverId          String?
+  coverUrl         String?
+  coverBlurDataURL String?
 
-  wishlist           Product[]     @relation("Wishlist")
-  orders             Order[]       @relation("UserOrders")
-  shop               Shop?         @relation(fields: [shopId], references: [id])
-  shopId            String?
+  wishlist Product[] @relation("Wishlist")
+  orders   Order[]   @relation("UserOrders")
+  shop     Shop?     @relation(fields: [shopId], references: [id])
+  shopId   String?
 
-  recentProducts     Product[]     @relation("RecentProducts")
-  likedProducts      Product[]     @relation("LikedProducts")
-  purchasedProducts  Product[]     @relation("PurchasedProducts")
+  recentProducts    Product[] @relation("RecentProducts")
+  likedProducts     Product[] @relation("LikedProducts")
+  purchasedProducts Product[] @relation("PurchasedProducts")
 
-  phone             String
-  status            String?
-  address           String?
-  city              String?
-  zip               String?
-  country           String?
-  state             String?
-  about            String?
+  phone   String
+  status  String?
+  address String?
+  city    String?
+  zip     String?
+  country String?
+  state   String?
+  about   String?
 
-  isVerified        Boolean        @default(false)
-  otp              String
-  lastOtpSentAt    DateTime?
-  commission       Float?
+  isVerified    Boolean   @default(false)
+  otp           String
+  lastOtpSentAt DateTime?
+  commission    Float?
 
-  role             Role
+  role Role
 
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-
 
 enum Gender {
   male
@@ -61,7 +60,6 @@ enum Role {
   VENDOR
 }
 
-
 model RefreshToken {
   id        String   @id @default(cuid())
   token     String   @unique
@@ -71,82 +69,51 @@ model RefreshToken {
   createdAt DateTime @default(now())
 }
 
-model Event {
-  id String @id @default(cuid())
+model Product {
+  id              String      @id @default(cuid())
+  name            String?
+  code            String?
+  status          String?
+  isFeatured      Boolean?
+  brandId         String?
+  brand           Brand?      @relation(fields: [brandId], references: [id])
+  likes           Int?
+  description     String?
+  metaTitle       String?
+  metaDescription String?
+  slug            String      @unique
+  categoryId      String
+  category        Category    @relation(fields: [categoryId], references: [id])
+  subCategoryId   String
+  subCategory     SubCategory @relation(fields: [subCategoryId], references: [id])
+  gender          String?
+  tags            String[]
+  sku             String
+  price           Float
+  priceSale       Float
+  oldPriceSale    Float?
+  available       Int
+  sold            Int         @default(0)
 
-  userId  String
-  creator User   @relation("CreatorEvents", fields: [userId], references: [id])
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id])
 
-  name        String
-  description String
+  reviews ProductReview[]
 
-  organizerId String
-  organizer   User   @relation("OrganizerEvents", fields: [organizerId], references: [id])
+  images ProductImage[]
 
-  organizerName  String?
-  organizerEmail String?
-  hostEmail      String?
-  posterEmail    String?
-
-  guests         String[] @default([])
-  attendeesEmail String[] @default([])
-
-  address   String
-  city      String
-  pincode   Int?
-  date      DateTime
-  startTime String?
-  stopTime  String?
-
-  sideAttractions  String[] @default([])
-  allowInstallment Boolean  @default(false)
-  isPrivate        Boolean  @default(false)
-
-  media             Media[]
-  ticketTypes       TicketType[]
-  activities        Activity[]
-  installmentConfig InstallmentConfig?
+  colors String[]
+  sizes  String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Media {
-  id        String   @id @default(cuid())
-  url       String
-  event     Event    @relation(fields: [eventId], references: [id])
-  eventId   String
-  createdAt DateTime @default(now())
-}
-
-model TicketType {
-  id       String @id @default(cuid())
-  type     String
-  price    Float
-  quantity Int?
-  booked   Int    @default(0)
-  event    Event  @relation(fields: [eventId], references: [id])
-  eventId  String
-}
-
-model Activity {
-  id      String @id @default(cuid())
-  title   String
-  speaker String
-  time    String
-  event   Event  @relation(fields: [eventId], references: [id])
-  eventId String
-}
-
-model InstallmentConfig {
-  id                   String @id @default(cuid())
-  numberOfInstallments Int
-  minPerInstallment    Float
-  event                Event  @relation(fields: [eventId], references: [id])
-  eventId              String @unique
-}
-
-enum UserRole {
-  USER
-  ADMIN
+model ProductImage {
+  id          String  @id @default(cuid())
+  url         String
+  imageId     String
+  blurDataURL String
+  productId   String
+  product     Product @relation(fields: [productId], references: [id])
 }
