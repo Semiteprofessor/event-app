@@ -1,3 +1,5 @@
+scalar DateTime
+
 enum Role {
   USER
   ADMIN
@@ -35,10 +37,17 @@ type User {
   updatedAt: DateTime!
 }
 
-type Query {
-  me: User!
+type Order {
+  id: ID!
+  createdAt: DateTime!
+  total: Float!
+  # Add other Order fields here
 }
 
+type PagedOrders {
+  orders: [Order!]!
+  count: Int!
+}
 
 type AuthPayload {
   success: Boolean!
@@ -48,6 +57,12 @@ type AuthPayload {
   otp: String
 }
 
+type Query {
+  me: User!
+  userByAdmin(id: ID!, page: Int, limit: Int): PagedOrders!
+  invoice(page: Int, limit: Int): PagedOrders!
+}
+
 type Mutation {
   registerUser(input: RegisterInput!): AuthPayload!
   loginUser(input: LoginInput!): AuthPayload!
@@ -55,8 +70,15 @@ type Mutation {
   resetPassword(token: String!, newPassword: String!): AuthPayload!
   verifyOtp(email: String!, otp: String!): AuthPayload!
   resendOtp(email: String!): AuthPayload!
-}
 
+  # 👇 New mutations
+  updateUser(data: UpdateUserInput!): User!
+  changePassword(
+    password: String!
+    newPassword: String!
+    confirmPassword: String!
+  ): String!
+}
 
 input RegisterInput {
   firstName: String!
@@ -77,4 +99,17 @@ input RegisterInput {
 input LoginInput {
   email: String!
   password: String!
+}
+
+input UpdateUserInput {
+  firstName: String
+  lastName: String
+  phone: String
+  address: String
+  city: String
+  zip: String
+  country: String
+  state: String
+  about: String
+  coverUrl: String
 }
