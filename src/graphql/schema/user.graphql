@@ -48,7 +48,10 @@ type Mutation {
   loginUser(input: LoginInput!): AuthPayload!
   forgetPassword(email: String!, origin: String!): AuthPayload!
   resetPassword(token: String!, newPassword: String!): AuthPayload!
+  verifyOtp(email: String!, otp: String!): AuthPayload!
+  resendOtp(email: String!): AuthPayload!
 }
+
 
 input RegisterInput {
   firstName: String!
