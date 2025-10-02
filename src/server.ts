@@ -1,26 +1,26 @@
 import "dotenv/config";
 import http from "http";
-import express from "express";
+import express, { Request } from "express";
 import { createServer } from "./app.js";
 import { logger } from "./lib/logger.js";
-import { context, trace, Span } from "@opentelemetry/api";
+import { context as otelContext, trace, Span } from "@opentelemetry/api";
 import { dashboardRouter } from "./server/queue-dashboard.js";
 
 async function start(): Promise<void> {
   try {
-    const app = await createServer();
     const port = Number(process.env.PORT) || 4000;
 
+    // ✅ Express parent app
     const rootApp = express();
-
     rootApp.use(express.json());
     rootApp.use(express.urlencoded({ extended: true }));
 
-    rootApp.use(app);
-    // rootApp.use("/", (req, res) => {
-    //   res.send("Server is up and running");
-    // });
+    // ✅ Create Apollo + GraphQL server, injecting user into context
+    const app = await createServer();
 
+    rootApp.use(app);
+
+    // ✅ BullMQ dashboard route
     rootApp.use("/admin/queues", dashboardRouter);
 
     // ✅ Health check route
@@ -28,11 +28,11 @@ async function start(): Promise<void> {
       res.status(200).json({ status: "ok" });
     });
 
-    // ✅ Wrap server with tracing logic
+    // ✅ Wrap server with OpenTelemetry tracing
     const server = http.createServer((req, res) => {
       const startTime = Date.now();
-
       const tracer = trace.getTracer("http-server");
+
       const span: Span = tracer.startSpan("http_request", {
         attributes: {
           "http.method": req.method || "UNKNOWN",
@@ -59,7 +59,7 @@ async function start(): Promise<void> {
         span.end();
       });
 
-      context.with(trace.setSpan(context.active(), span), () => {
+      otelContext.with(trace.setSpan(otelContext.active(), span), () => {
         rootApp(req, res);
       });
     });
