@@ -49,8 +49,15 @@ type UserOrdersResult {
   orders: [Order!]!
   count: Int!
 }
+type Order {
+  id: ID!
+  total: Float!
+  createdAt: DateTime!
+  # Add more fields as needed
+}
 
 type InvoiceResult {
+  success: Boolean!
   orders: [Order!]!
   count: Int!
 }

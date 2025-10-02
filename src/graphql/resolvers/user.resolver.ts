@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 
 import { getUserFromToken } from "../../lib/jwt.js";
 import { GraphQLError } from "graphql";
+import { getUser } from "../../utils/getUser.js";
 
 const prisma = new PrismaClient();
 
@@ -75,48 +76,40 @@ export const userResolvers: IResolvers = {
     },
 
     invoice: async (
-  _parent: unknown,
-  { page = 1, limit = 10 }: { page?: number; limit?: number },
-  context: any
-) => {
-  
-  const user = await getUser(context.req, context.res);
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
-
-  const pageNumber = Math.max(page, 1);
-  const pageSize = Math.max(limit, 1);
-  const skip = (pageNumber - 1) * pageSize;
-
-  const totalOrderCount = await prisma.order.count({
-    where: {
-      userId: user.id,
-    },
-  });
-
-  const orders = await prisma.order.findMany({
-    where: {
-      userId: user.id,
-    },
-    skip,
-    take: pageSize,
-    orderBy: {
-      createdAt: "desc",
-    },
-    include: {
+      _parent: unknown,
+      { page = 1, limit = 10 }: { page?: number; limit?: number },
+      context: any
+    ) => {
       
-      items: true,
-      shop: true,
+      const user = await getUser(context, true);
+
+      
+      const pageNumber = Math.max(page, 1);
+      const pageSize = Math.max(limit, 1);
+      const skip = (pageNumber - 1) * pageSize;
+
+      const totalOrderCount = await prisma.order.count({
+        where: { userId: user.id },
+      });
+
+      const orders = await prisma.order.findMany({
+        where: { userId: user.id },
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: "desc" },
+        include: {
+          items: true, // Optional: include order items if your schema has them
+          shop: true, // Optional: include shop details
+        },
+      });
+
+      return {
+        success: true,
+        orders,
+        count: Math.ceil(totalOrderCount / pageSize),
+      };
     },
-  });
-
-  return {
-    orders,
-    count: Math.ceil(totalOrderCount / pageSize),
-  };
-},
-
+  },
 
   Mutation: {
     updateUser: async (_parent, { data }, context) => {
