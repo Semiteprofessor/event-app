@@ -1,0 +1,72 @@
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  gender: Gender
+  coverId: String
+  coverUrl: String
+  coverBlurDataURL: String
+  phone: String
+  status: String
+  address: String
+  city: String
+  zip: String
+  country: String
+  state: String
+  about: String
+  isVerified: Boolean!
+  otp: String
+  commission: Float
+  role: Role!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type AuthPayload {
+  success: Boolean!
+  message: String!
+  token: String
+  user: User
+  otp: String
+}
+
+type Mutation {
+  registerUser(input: RegisterInput!): AuthPayload!
+  loginUser(input: LoginInput!): AuthPayload!
+  forgetPassword(email: String!, origin: String!): AuthPayload!
+  resetPassword(token: String!, newPassword: String!): AuthPayload!
+}
+
+input RegisterInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  password: String!
+  gender: Gender
+  phone: String
+  address: String
+  city: String
+  zip: String
+  country: String
+  state: String
+  about: String
+  role: Role
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
