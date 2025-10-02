@@ -35,6 +35,11 @@ type User {
   updatedAt: DateTime!
 }
 
+type Query {
+  me: User!
+}
+
+
 type AuthPayload {
   success: Boolean!
   message: String!
