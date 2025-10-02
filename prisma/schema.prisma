@@ -7,53 +7,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id               String  @id @default(cuid())
-  firstName        String
-  lastName         String
-  email            String  @unique
-  password         String
-  gender           Gender
-  coverId          String?
-  coverUrl         String?
-  coverBlurDataURL String?
-
-  wishlist Product[] @relation("Wishlist")
-  orders   Order[]   @relation("UserOrders")
-  shop     Shop?     @relation(fields: [shopId], references: [id])
-  shopId   String?
-
-  recentProducts    Product[] @relation("RecentProducts")
-  likedProducts     Product[] @relation("LikedProducts")
-  purchasedProducts Product[] @relation("PurchasedProducts")
-
-  phone   String
-  status  String?
-  address String?
-  city    String?
-  zip     String?
-  country String?
-  state   String?
-  about   String?
-
-  isVerified    Boolean   @default(false)
-  otp           String
-  lastOtpSentAt DateTime?
-  commission    Float?
-
-  role Role
-
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  RefreshToken  RefreshToken[]
-  ProductReview ProductReview[]
-  Review        Review[]
-  Order         Order[]
-  Product       Product[]
-  followingShops Shop[] @relation("ShopFollowers")
-
-}
-
+/**
+ * Enums
+ */
 enum Gender {
   male
   female
@@ -67,11 +23,117 @@ enum Role {
   VENDOR
 }
 
+enum ShopStatus {
+  approved
+  pending
+  in_review
+  action_required
+  blocked
+  rejected
+}
+
+enum PaymentMethod {
+  Paystack
+  Flutterwave
+  Stripe
+  PayPal
+  COD
+}
+
+enum OrderStatus {
+  pending
+  on_the_way
+  delivered
+  canceled
+  returned
+}
+
+enum DiscountType {
+  fixed
+  percent
+}
+
+enum CompaignStatus {
+  enable
+  disable
+}
+
+enum CouponType {
+  percent
+  fixed
+}
+
+enum CurrencyStatus {
+  active
+  disabled
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  hold
+}
+
+enum PaymentType {
+  monthly
+  other
+}
+
+/**
+ * Models
+ */
+
+model User {
+  id               String  @id @default(cuid())
+  firstName        String
+  lastName         String
+  email            String  @unique
+  password         String
+  gender           Gender?
+  coverId          String?
+  coverUrl         String?
+  coverBlurDataURL String?
+
+  // relations
+  wishlist          Product[] @relation("Wishlist")
+  orders            Order[]
+  shops             Shop[]    @relation("VendorShops")
+  recentProducts    Product[] @relation("RecentProducts")
+  likedProducts     Product[] @relation("LikedProducts")
+  purchasedProducts Product[] @relation("PurchasedProducts")
+
+  refreshTokens  RefreshToken[]
+  productReviews ProductReview[]
+  reviews        Review[]
+
+  followingShops Shop[] @relation("ShopFollowers")
+
+  phone   String
+  status  String?
+  address String?
+  city    String?
+  zip     String?
+  country String?
+  state   String?
+  about   String?
+
+  isVerified    Boolean   @default(false)
+  otp           String?
+  lastOtpSentAt DateTime?
+  commission    Float?
+
+  role Role @default(USER)
+
+  // timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model RefreshToken {
   id        String   @id @default(cuid())
   token     String   @unique
-  user      User     @relation(fields: [userId], references: [id])
   userId    String
+  user      User     @relation(fields: [userId], references: [id])
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
@@ -81,10 +143,10 @@ model Product {
   name            String?
   code            String?
   status          String?
-  isFeatured      Boolean?
+  isFeatured      Boolean?    @default(false)
   brandId         String?
   brand           Brand?      @relation(fields: [brandId], references: [id])
-  likes           Int?
+  likes           Int?        @default(0)
   description     String?
   metaTitle       String?
   metaDescription String?
@@ -94,7 +156,7 @@ model Product {
   subCategoryId   String
   subCategory     SubCategory @relation(fields: [subCategoryId], references: [id])
   gender          String?
-  tags            String[]
+  tags            String[]    @default([])
   sku             String
   price           Float
   priceSale       Float
@@ -106,17 +168,22 @@ model Product {
   shop   Shop   @relation(fields: [shopId], references: [id])
 
   reviews ProductReview[]
+  images  ProductImage[]
 
-  images ProductImage[]
+  colors String[] @default([])
+  sizes  String[] @default([])
 
-  colors String[]
-  sizes  String[]
+  // many-to-many reverse sides
+  wishlistedBy User[] @relation("Wishlist")
+  recentUsers  User[] @relation("RecentProducts")
+  likedBy      User[] @relation("LikedProducts")
+  purchasedBy  User[] @relation("PurchasedProducts")
 
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  User              User?               @relation(fields: [userId], references: [id])
-  userId            String?
+  // campaign relation (explicit join table)
   ProductOnCompaign ProductOnCompaign[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ProductImage {
@@ -178,10 +245,10 @@ model Category {
   coverBlurDataURL String
 
   subCategories SubCategory[]
+  products      Product[]
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Product   Product[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model SubCategory {
@@ -201,38 +268,34 @@ model SubCategory {
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Product   Product[]
-}
-
-model Brand {
-  id String @id @default(cuid())
-
-  // Flattened logo fields
-  logoId          String
-  logoUrl         String
-  logoBlurDataURL String
-
-  name            String
-  metaTitle       String
-  description     String
-  metaDescription String
-  slug            String @unique
-  status          String
-
-  // Optional relation: one brand → many products
   products Product[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+model Brand {
+  id              String    @id @default(cuid())
+  logoId          String
+  logoUrl         String
+  logoBlurDataURL String
+  name            String
+  metaTitle       String
+  description     String
+  metaDescription String
+  slug            String    @unique
+  status          String
+  products        Product[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
 model Shop {
   id String @id @default(cuid())
 
+  // vendor relation (one user can have many shops)
   vendorId String
-  vendor   User   @relation(fields: [vendorId], references: [id])
+  vendor   User   @relation("VendorShops", fields: [vendorId], references: [id])
 
   logoId          String
   logoUrl         String
@@ -266,46 +329,22 @@ model Shop {
   paymentBankName    String
   paymentAccountNo   Int
 
+  // followers: many-to-many between Shop and User
   followers User[]    @relation("ShopFollowers")
   products  Product[]
-
   payments  Payment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-enum ShopStatus {
-  approved
-  pending
-  in_review
-  action_required
-  blocked
-  rejected
-}
-
-enum PaymentMethod {
-  Paystack
-  Flutterwave
-  Stripe
-  PayPal
-  COD
-}
-
-enum OrderStatus {
-  pending
-  on_the_way
-  delivered
-  canceled
-  returned
-}
-
 model Order {
-  id             String        @id @default(cuid())
-  paymentMethod  PaymentMethod
-  orderNo        String
-  paymentId String
-  payment   Payment @relation("PaymentOrders", fields: [paymentId], references: [id])
+  id            String        @id @default(cuid())
+  paymentMethod PaymentMethod
+  orderNo       String
+  paymentId     String?
+  payment       Payment?      @relation("PaymentOrders", fields: [paymentId], references: [id])
+
   subTotal       Float
   total          Float
   totalItems     Int
@@ -317,23 +356,11 @@ model Order {
   items          Json?
   note           String?
 
-  
-
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-enum DiscountType {
-  fixed
-  percent
-}
-
-enum CompaignStatus {
-  enable
-  disable
 }
 
 model Compaign {
@@ -355,7 +382,6 @@ model Compaign {
   discount     Float
   status       CompaignStatus @default(enable)
 
-  // relation: One campaign -> Many products
   products ProductOnCompaign[]
 
   createdAt DateTime @default(now())
@@ -372,40 +398,30 @@ model ProductOnCompaign {
   @@id([compaignId, productId])
 }
 
-enum CouponType {
-  percent
-  fixed
-}
-
 model CouponCode {
-  id           String      @id @default(cuid())
-  name         String
-  code         String      @unique
-  discount     Float
-  expire       DateTime    @default(now())
-  description  String?
-  type         CouponType
-  usedBy       String[]   
+  id          String     @id @default(cuid())
+  name        String
+  code        String     @unique
+  discount    Float
+  expire      DateTime
+  description String?
+  type        CouponType
+  usedBy      String[]   @default([])
 
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-}
-
-enum CurrencyStatus {
-  active
-  disabled
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Currency {
-  id        String          @id @default(cuid())
-  name      String
-  code      String          @unique
-  country   String
-  status    CurrencyStatus  @default(active)
-  rate      Float?
+  id      String         @id @default(cuid())
+  name    String
+  code    String         @unique
+  country String
+  status  CurrencyStatus @default(active)
+  rate    Float?
 
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Newsletter {
@@ -416,24 +432,24 @@ model Newsletter {
 }
 
 model Notification {
-  id            String   @id @default(cuid())
+  id            String        @id @default(cuid())
   opened        Boolean
   title         String
   orderId       String
-  coverId       String?     // cover._id (optional)
-  coverUrl      String?     // cover.url (optional)
+  coverId       String?
+  coverUrl      String?
   city          String
   paymentMethod PaymentMethod
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model Payment {
-  id              String        @id @default(cuid())
-  shopId          String
-  shop            Shop          @relation(fields: [shopId], references: [id])
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id])
 
-  orders          Order[]       @relation("PaymentOrders")
+  orders Order[] @relation("PaymentOrders")
 
   total           Float
   totalCommission Float
@@ -445,18 +461,6 @@ model Payment {
   date            DateTime      @default(now())
   message         String?
 
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-}
-
-
-enum PaymentStatus {
-  pending
-  paid
-  hold
-}
-
-enum PaymentType {
-  monthly
-  other
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
