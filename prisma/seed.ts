@@ -1,4 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Role } from "@prisma/client";
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -7,12 +8,22 @@ async function main() {
     update: {},
     create: {
       email: "semiteprofessor@gmail.com",
-      passwordHash: "12345678",
-      name: "Admin",
-      role: "ADMIN",
+      password: "12345678",
+      firstName: "Admin",
+      lastName: "User",
+      role: Role.ADMIN,
+      phone: "0000000000",
     },
   });
-  console.log({ admin });
+
+  console.log("✅ Admin user created:", admin);
 }
 
-main().finally(() => prisma.$disconnect());
+main()
+  .catch((e) => {
+    console.error("❌ Seed error:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

@@ -22,11 +22,11 @@
     "@types/jsonwebtoken": "^9.0.10",
     "cross-env": "^10.1.0",
     "jest": "^30.2.0",
-    "prisma": "^6.16.2",
+    "prisma": "^6.16.3",
     "ts-jest": "^29.4.4",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@bull-board/express": "^6.13.0",
@@ -37,7 +37,7 @@
     "@opentelemetry/resources": "^2.1.0",
     "@opentelemetry/sdk-node": "^0.205.0",
     "@opentelemetry/semantic-conventions": "^1.37.0",
-    "@prisma/client": "^6.16.2",
+    "@prisma/client": "^6.16.3",
     "apollo-server-express": "^3.13.0",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.58.9",
