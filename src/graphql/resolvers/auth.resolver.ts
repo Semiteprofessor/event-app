@@ -6,6 +6,7 @@ import fs from "fs";
 import path from "path";
 import nodemailer from "nodemailer";
 import { GraphQLError } from "graphql";
+import { getUserFromToken } from "../../lib/jwt.js";
 
 const prisma = new PrismaClient();
 
@@ -13,26 +14,25 @@ interface Context {
   user?: { id: string; email: string };
 }
 
-const authenticate = (token?: string) => {
-  if (!token) return null;
-  try {
-    return jwt.verify(token, process.env.JWT_SECRET!) as { id: string; email: string };
-  } catch {
-    return null;
-  }
-};
+getUserFromToken;
 
 export const userResolvers = {
   Query: {
     // ✅ Fetch currently logged-in user
     me: async (_: any, __: any, context: Context) => {
       if (!context.user) {
-        throw new GraphQLError("Unauthorized", { extensions: { code: "UNAUTHENTICATED" } });
+        throw new GraphQLError("Unauthorized", {
+          extensions: { code: "UNAUTHENTICATED" },
+        });
       }
 
-      const user = await prisma.user.findUnique({ where: { id: context.user.id } });
+      const user = await prisma.user.findUnique({
+        where: { id: context.user.id },
+      });
       if (!user) {
-        throw new GraphQLError("User not found", { extensions: { code: "NOT_FOUND" } });
+        throw new GraphQLError("User not found", {
+          extensions: { code: "NOT_FOUND" },
+        });
       }
 
       return user;
@@ -48,7 +48,10 @@ export const userResolvers = {
       const userCount = await prisma.user.count();
 
       if (existingUser) {
-        return { success: false, message: "User with this email already exists" };
+        return {
+          success: false,
+          message: "User with this email already exists",
+        };
       }
 
       const hashedPassword = await bcrypt.hash(input.password, 10);
@@ -68,14 +71,28 @@ export const userResolvers = {
         },
       });
 
-      const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET!, {
-        expiresIn: "7d",
-      });
+      const token = jwt.sign(
+        { id: user.id, email: user.email },
+        process.env.JWT_SECRET!,
+        {
+          expiresIn: "7d",
+        }
+      );
 
-      const htmlFilePath = path.join(process.cwd(), "email-templates", "otp.html");
+      const htmlFilePath = path.join(
+        process.cwd(),
+        "email-templates",
+        "otp.html"
+      );
       let htmlContent = fs.readFileSync(htmlFilePath, "utf8");
-      htmlContent = htmlContent.replace(/<h1>[\s\d]*<\/h1>/g, `<h1>${otp}</h1>`);
-      htmlContent = htmlContent.replace(/semiteprofessor@gmail\.com/g, user.email);
+      htmlContent = htmlContent.replace(
+        /<h1>[\s\d]*<\/h1>/g,
+        `<h1>${otp}</h1>`
+      );
+      htmlContent = htmlContent.replace(
+        /semiteprofessor@gmail\.com/g,
+        user.email
+      );
 
       const transporter = nodemailer.createTransport({
         service: "gmail",
@@ -92,7 +109,13 @@ export const userResolvers = {
         html: htmlContent,
       });
 
-      return { success: true, message: "User created successfully", otp, token, user };
+      return {
+        success: true,
+        message: "User created successfully",
+        otp,
+        token,
+        user,
+      };
     },
 
     loginUser: async (_: any, { input }: any) => {
@@ -104,7 +127,10 @@ export const userResolvers = {
         return { success: false, message: "User not found" };
       }
 
-      const isPasswordMatch = await bcrypt.compare(input.password, user.password);
+      const isPasswordMatch = await bcrypt.compare(
+        input.password,
+        user.password
+      );
       if (!isPasswordMatch) {
         return { success: false, message: "Incorrect password" };
       }
@@ -125,12 +151,21 @@ export const userResolvers = {
         return { success: false, message: "User not found" };
       }
 
-      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
+        expiresIn: "7d",
+      });
 
       const resetLink = `${origin}/auth/reset-password/${token}`;
-      const htmlFilePath = path.join(process.cwd(), "src/email-templates", "forget.html");
+      const htmlFilePath = path.join(
+        process.cwd(),
+        "src/email-templates",
+        "forget.html"
+      );
       let htmlContent = fs.readFileSync(htmlFilePath, "utf8");
-      htmlContent = htmlContent.replace(/href="javascript:void\(0\);"/g, `href="${resetLink}"`);
+      htmlContent = htmlContent.replace(
+        /href="javascript:void\(0\);"/g,
+        `href="${resetLink}"`
+      );
 
       const transporter = nodemailer.createTransport({
         service: "gmail",
@@ -147,7 +182,11 @@ export const userResolvers = {
         html: htmlContent,
       });
 
-      return { success: true, message: "Password reset email sent successfully", token };
+      return {
+        success: true,
+        message: "Password reset email sent successfully",
+        token,
+      };
     },
 
     resetPassword: async (_: any, { token, newPassword }: any) => {
@@ -169,7 +208,10 @@ export const userResolvers = {
       }
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-      await prisma.user.update({ where: { id: user.id }, data: { password: hashedPassword } });
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashedPassword },
+      });
 
       return { success: true, message: "Password updated successfully" };
     },
@@ -217,10 +259,20 @@ export const userResolvers = {
 
       await prisma.user.update({ where: { email }, data: { otp: newOtp } });
 
-      const htmlFilePath = path.join(process.cwd(), "src/email-templates", "otp.html");
+      const htmlFilePath = path.join(
+        process.cwd(),
+        "src/email-templates",
+        "otp.html"
+      );
       let htmlContent = fs.readFileSync(htmlFilePath, "utf8");
-      htmlContent = htmlContent.replace(/<h1>[\s\d]*<\/h1>/g, `<h1>${newOtp}</h1>`);
-      htmlContent = htmlContent.replace(/usingyourmail@gmail\.com/g, user.email);
+      htmlContent = htmlContent.replace(
+        /<h1>[\s\d]*<\/h1>/g,
+        `<h1>${newOtp}</h1>`
+      );
+      htmlContent = htmlContent.replace(
+        /usingyourmail@gmail\.com/g,
+        user.email
+      );
 
       const transporter = nodemailer.createTransport({
         service: "gmail",
