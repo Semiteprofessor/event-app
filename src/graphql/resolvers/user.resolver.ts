@@ -196,5 +196,85 @@ export const userResolvers = {
         message: "Password updated successfully",
       };
     },
+    verifyOtp: async (_: any, { email, otp }: any) => {
+      const user = await prisma.user.findUnique({ where: { email } });
+
+      if (!user) {
+        return { success: false, message: "User not found" };
+      }
+
+      if (user.isVerified) {
+        return { success: false, message: "OTP has already been verified" };
+      }
+
+      if (user.otp !== otp) {
+        return { success: false, message: "Invalid OTP" };
+      }
+
+      await prisma.user.update({
+        where: { email },
+        data: { isVerified: true },
+      });
+
+      return {
+        success: true,
+        message: "OTP verified successfully",
+        user,
+      };
+    },
+
+    // ✅ Resend OTP
+    resendOtp: async (_: any, { email }: any) => {
+      const user = await prisma.user.findUnique({ where: { email } });
+
+      if (!user) {
+        return { success: false, message: "User not found" };
+      }
+
+      if (user.isVerified) {
+        return {
+          success: false,
+          message: "OTP has already been verified",
+        };
+      }
+
+      const newOtp = otpGenerator.generate(6, {
+        upperCaseAlphabets: false,
+        specialChars: false,
+        lowerCaseAlphabets: false,
+        digits: true,
+      });
+
+      await prisma.user.update({
+        where: { email },
+        data: { otp: newOtp },
+      });
+
+      // 📩 Send OTP email
+      const htmlFilePath = path.join(process.cwd(), "src/email-templates", "otp.html");
+      let htmlContent = fs.readFileSync(htmlFilePath, "utf8");
+      htmlContent = htmlContent.replace(/<h1>[\s\d]*<\/h1>/g, `<h1>${newOtp}</h1>`);
+      htmlContent = htmlContent.replace(/usingyourmail@gmail\.com/g, user.email);
+
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.RECEIVING_EMAIL,
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      });
+
+      await transporter.sendMail({
+        from: process.env.RECEIVING_EMAIL,
+        to: user.email,
+        subject: "Verify your email",
+        html: htmlContent,
+      });
+
+      return {
+        success: true,
+        message: "OTP resent successfully",
+      };
+    },
   },
 };
