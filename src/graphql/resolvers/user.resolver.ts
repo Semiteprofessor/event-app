@@ -74,24 +74,49 @@ export const userResolvers: IResolvers = {
       };
     },
 
-    invoice: async (_parent, { page = 1, limit = 10 }, context) => {
-      const user = await getUser(context.req, context.res);
-      const skip = (page - 1) * limit;
-      const totalOrderCount = await Order.countDocuments({
-        "user.email": user.email,
-      });
+    invoice: async (
+  _parent: unknown,
+  { page = 1, limit = 10 }: { page?: number; limit?: number },
+  context: any
+) => {
+  
+  const user = await getUser(context.req, context.res);
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
 
-      const orders = await Order.find({ "user.email": user.email })
-        .skip(skip)
-        .limit(limit)
-        .sort({ createdAt: -1 });
+  const pageNumber = Math.max(page, 1);
+  const pageSize = Math.max(limit, 1);
+  const skip = (pageNumber - 1) * pageSize;
 
-      return {
-        orders,
-        count: Math.ceil(totalOrderCount / limit),
-      };
+  const totalOrderCount = await prisma.order.count({
+    where: {
+      userId: user.id,
     },
-  },
+  });
+
+  const orders = await prisma.order.findMany({
+    where: {
+      userId: user.id,
+    },
+    skip,
+    take: pageSize,
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      
+      items: true,
+      shop: true,
+    },
+  });
+
+  return {
+    orders,
+    count: Math.ceil(totalOrderCount / pageSize),
+  };
+},
+
 
   Mutation: {
     updateUser: async (_parent, { data }, context) => {

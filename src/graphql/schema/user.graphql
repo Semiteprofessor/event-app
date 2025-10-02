@@ -44,6 +44,22 @@ type Order {
   # Add other Order fields here
 }
 
+type UserOrdersResult {
+  user: User!
+  orders: [Order!]!
+  count: Int!
+}
+
+type InvoiceResult {
+  orders: [Order!]!
+  count: Int!
+}
+
+type Query {
+  userByAdmin(id: ID!, page: Int, limit: Int): UserOrdersResult!
+  invoice(page: Int, limit: Int): InvoiceResult!
+}
+
 type PagedOrders {
   orders: [Order!]!
   count: Int!
