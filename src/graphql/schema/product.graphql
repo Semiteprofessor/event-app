@@ -64,7 +64,6 @@ type Query {
   getProducts(filter: ProductFilterInput): ProductResponse!
 }
 
-
 type PaginatedProducts {
   products: [Product!]!
   total: Int!
@@ -75,15 +74,35 @@ type Query {
   getProductsByCategory(
     categorySlug: String!
     brandSlug: String
+    page: Int = 1
+    limit: Int = 12
+    prices: String
     sizes: [String!]
     colors: [String!]
-    minPrice: Float
-    maxPrice: Float
-    isFeatured: Boolean
     gender: [String!]
-    sortBy: String
-    sortOrder: Int
-    page: Int
-    limit: Int
-  ): PaginatedProducts!
+    date: Int
+    price: Int
+    name: Int
+    top: Int
+    isFeatured: Boolean
+    rate: Float = 1
+  ): ProductsResult!
+
+  getProductsByCompaign(
+    slug: String!
+    page: Int = 1
+    limit: Int = 12
+    name: Int
+    date: Int
+    price: Int
+    top: Int
+    rate: Float = 1
+  ): ProductsResult!
+}
+
+type ProductsResult {
+  success: Boolean!
+  data: [Product!]!
+  total: Int!
+  count: Int!
 }

@@ -1,6 +1,22 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
+interface GetProductsArgs {
+  categorySlug: string;
+  brandSlug?: string;
+  page?: number;
+  limit?: number;
+  prices?: string;
+  sizes?: string[];
+  colors?: string[];
+  gender?: string[];
+  date?: number;
+  price?: number;
+  name?: number;
+  top?: number;
+  isFeatured?: boolean;
+  rate?: number;
+}
 export const productResolvers = {
   Query: {
     getProducts: async (_: any, { filter }: any) => {
