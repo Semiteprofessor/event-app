@@ -154,6 +154,8 @@ type Query {
     categorySlug: String!
     subcategorySlug: String!
   ): Filters!
+
+  getFiltersByShop(shopSlug: String!): ShopFilters!
 }
 
 type ProductsResult {
@@ -177,6 +179,14 @@ type FilterData {
   genders: [String!]!
   brands: [Brand!]!
   shops: [Shop!]!
+}
+
+type ShopFilters {
+  colors: [String!]!
+  sizes: [String!]!
+  genders: [String!]!
+  prices: [Float!]!
+  brands: [Brand!]!
 }
 
 extend type Query {
