@@ -799,5 +799,59 @@ export const productResolvers = {
 
       return updatedProduct;
     },
+
+    deleteProductByAdmin: async (
+      _: any,
+      { slug, shopId }: { slug: string; shopId: string },
+      context: any
+    ) => {
+      try {
+        // 1️⃣ Authenticate admin
+        const admin = await getAdmin(context);
+        if (!admin) throw new Error("Unauthorized");
+
+        // 2️⃣ Find product
+        const product = await prisma.product.findUnique({
+          where: { slug },
+          include: { images: true },
+        });
+
+        if (!product) {
+          return {
+            success: false,
+            message: "Product Not Found",
+          };
+        }
+
+        // 3️⃣ Delete product images from storage (if any)
+        if (product.images && product.images.length > 0) {
+          await multiFilesDelete(product.images.map((img) => img.url));
+        }
+
+        // 4️⃣ Delete the product
+        await prisma.product.delete({
+          where: { slug },
+        });
+
+        await prisma.shop.update({
+          where: { id: shopId },
+          data: {
+            products: {
+              disconnect: [{ id: product.id }],
+            },
+          },
+        });
+
+        return {
+          success: true,
+          message: "Product Deleted",
+        };
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.message,
+        };
+      }
+    },
   },
 };

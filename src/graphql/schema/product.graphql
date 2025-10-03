@@ -188,6 +188,12 @@ type Shop {
 
 type Mutation {
   createProductByAdmin(input: CreateProductInput!): Product!
+  deleteProductByAdmin(slug: String!, shopId: String!): DeleteResponse!
+}
+
+type DeleteResponse {
+  success: Boolean!
+  message: String!
 }
 
 input ImageInput {
