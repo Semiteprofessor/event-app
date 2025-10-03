@@ -98,6 +98,23 @@ type Query {
     top: Int
     rate: Float = 1
   ): ProductsResult!
+
+  getProductsBySubCategory(
+    slug: String!
+    page: Int = 1
+    limit: Int = 12
+    brand: String
+    sizes: String
+    colors: String
+    prices: String
+    gender: String
+    isFeatured: Boolean
+    date: Int
+    priceSort: Int
+    nameSort: Int
+    top: Int
+    rate: Float
+  ): ProductPagination!
 }
 
 type ProductsResult {
