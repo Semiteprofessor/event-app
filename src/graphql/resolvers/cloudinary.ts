@@ -1,11 +1,10 @@
 import { GraphQLUpload } from "graphql-upload";
-import cloudinary from "../utils/cloudinary";
+import cloudinary from "../../utils/cloudinary.js";
 
 export const cloudinaryResolvers = {
   Upload: GraphQLUpload,
 
   Mutation: {
-    // 🖼️ Upload single image
     uploadSingleImage: async (_: any, { file }: any) => {
       const { createReadStream } = await file;
 
@@ -26,7 +25,6 @@ export const cloudinaryResolvers = {
       };
     },
 
-    // 📁 Upload multiple images
     uploadMultipleImages: async (_: any, { files }: any) => {
       const uploads = await Promise.all(
         files.map(async (file: any) => {
@@ -53,13 +51,11 @@ export const cloudinaryResolvers = {
       return uploads;
     },
 
-    // 🗑️ Delete single image
     deleteSingleImage: async (_: any, { publicId }: { publicId: string }) => {
       const result = await cloudinary.uploader.destroy(publicId);
       return { result: result.result };
     },
 
-    // 🗑️ Delete multiple images
     deleteMultipleImages: async (
       _: any,
       { publicIds }: { publicIds: string[] }

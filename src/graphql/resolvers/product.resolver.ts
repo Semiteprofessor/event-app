@@ -2,6 +2,7 @@ import { PrismaClient, ShopStatus } from "@prisma/client";
 import { GraphQLError } from "graphql";
 import { getAdmin } from "../../utils/getUser.js";
 import { getBlurDataURL } from "../../utils/index.js";
+import { cloudinaryResolvers } from "./cloudinary.js";
 const slugify = require("slugify");
 const prisma = new PrismaClient();
 
@@ -806,11 +807,9 @@ export const productResolvers = {
       context: any
     ) => {
       try {
-        // 1️⃣ Authenticate admin
         const admin = await getAdmin(context);
         if (!admin) throw new Error("Unauthorized");
 
-        // 2️⃣ Find product
         const product = await prisma.product.findUnique({
           where: { slug },
           include: { images: true },
@@ -823,12 +822,10 @@ export const productResolvers = {
           };
         }
 
-        // 3️⃣ Delete product images from storage (if any)
         if (product.images && product.images.length > 0) {
-          await multiFilesDelete(product.images.map((img) => img.url));
+          await cloudinaryResolvers.Mutation.uploadMultipleImages(product.images.map((img) => img.url), {});
         }
 
-        // 4️⃣ Delete the product
         await prisma.product.delete({
           where: { slug },
         });

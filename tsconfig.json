@@ -10,8 +10,9 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "outDir": "dist",
+    "typeRoots": ["./src/types", "./node_modules/@types"],
     "moduleDetection": "force",
-    "forceConsistentCasingInFileNames": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src"],
   "ts-node": {
