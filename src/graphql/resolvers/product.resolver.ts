@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { GraphQLError } from "graphql";
 const prisma = new PrismaClient();
 
 interface GetProductsArgs {
@@ -15,6 +16,17 @@ interface GetProductsArgs {
   name?: number;
   top?: number;
   isFeatured?: boolean;
+  rate?: number;
+}
+
+interface GetProductsByCompaignArgs {
+  slug: string;
+  page?: number;
+  limit?: number;
+  name?: number;
+  date?: number;
+  price?: number;
+  top?: number;
   rate?: number;
 }
 export const productResolvers = {
@@ -204,6 +216,93 @@ export const productResolvers = {
         total: totalProducts,
         count: Math.ceil(totalProducts / limit),
       };
+    },
+
+    getProductsByCompaign: async (_: any, args: GetProductsByCompaignArgs) => {
+      try {
+        const {
+          slug,
+          page = 1,
+          limit = 12,
+          name,
+          date,
+          price,
+          top,
+          rate = 1,
+        } = args;
+
+        // ✅ 1. Find the campaign by slug
+        const compaign = await prisma.compaign.findUnique({
+          where: { slug },
+          include: {
+            products: {
+              include: { product: { include: { reviews: true } } },
+            },
+          },
+        });
+
+        if (!compaign) {
+          throw new GraphQLError("Compaign not found");
+        }
+
+        const productIds = compaign.products.map((p) => p.productId);
+
+        if (productIds.length === 0) {
+          return {
+            success: true,
+            data: [],
+            total: 0,
+            count: 0,
+          };
+        }
+
+        const totalProducts = await prisma.product.count({
+          where: {
+            id: { in: productIds },
+            status: { not: "disabled" },
+          },
+        });
+
+        const orderBy: any = (date && { createdAt: date }) ||
+          (price && { priceSale: price }) ||
+          (name && { name: name }) ||
+          (top && { reviews: { _avg: { rating: top } } }) || {
+            reviews: { _avg: { rating: "desc" } },
+          };
+
+        const products = await prisma.product.findMany({
+          where: {
+            id: { in: productIds },
+            status: { not: "disabled" },
+          },
+          include: {
+            reviews: true,
+            shop: true,
+          },
+          orderBy,
+          skip: limit * (page - 1),
+          take: limit,
+        });
+
+        const productsWithRating = products.map((p) => ({
+          ...p,
+          averageRating:
+            p.reviews.length > 0
+              ? p.reviews.reduce((acc, r) => acc + (r.rating || 0), 0) /
+                p.reviews.length
+              : 0,
+        }));
+
+        return {
+          success: true,
+          data: productsWithRating,
+          total: totalProducts,
+          count: Math.ceil(totalProducts / limit),
+        };
+      } catch (error: any) {
+        console.error("getProductsByCompaign error:", error);
+        throw new GraphQLError(error.message || "Internal server error");
+      }
     },
   },
 };
