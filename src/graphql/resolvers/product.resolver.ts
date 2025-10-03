@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, ShopStatus } from "@prisma/client";
 import { GraphQLError } from "graphql";
 const prisma = new PrismaClient();
 
@@ -517,6 +517,72 @@ export const productResolvers = {
         };
       } catch (error: any) {
         throw new GraphQLError(error.message || "Failed to fetch products");
+      }
+    },
+    getFilters: async () => {
+      try {
+        const products = await prisma.product.findMany({
+          where: { status: { not: "disabled" } },
+          select: {
+            colors: true,
+            sizes: true,
+            gender: true,
+            price: true,
+          },
+        });
+
+        const shops = await prisma.shop.findMany({
+          where: { status: { not: "blocked" } },
+          select: {
+            id: true,
+            title: true,
+          },
+        });
+
+        const brands = await prisma.brand.findMany({
+          where: { status: { not: "disabled" } },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        });
+
+        const genders = Array.from(
+          new Set(products.map((p) => p.gender).filter(Boolean))
+        );
+
+        const colorsSet = new Set<string>();
+        products.forEach((p) => {
+          p.colors?.forEach((c) => colorsSet.add(c));
+        });
+        const colors = Array.from(colorsSet);
+
+        const sizesSet = new Set<string>();
+        products.forEach((p) => {
+          p.sizes?.forEach((s) => sizesSet.add(s));
+        });
+        const sizes = Array.from(sizesSet);
+
+        const priceValues = products
+          .map((p) => Number(p.price) || 0)
+          .filter((p) => !isNaN(p));
+
+        const minPrice = priceValues.length ? Math.min(...priceValues) : 0;
+        const maxPrice = priceValues.length ? Math.max(...priceValues) : 100000;
+
+        return {
+          colors,
+          sizes,
+          prices: [minPrice, maxPrice],
+          genders,
+          brands,
+          shops,
+        };
+      } catch (error: any) {
+        throw new GraphQLError(
+          error.message || "Failed to fetch filters from database"
+        );
       }
     },
   },
