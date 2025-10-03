@@ -18,6 +18,21 @@ type Product {
   shop: String
   createdAt: String
   image: Image
+  
+  id: ID!
+  name: String!
+  slug: String!
+  price: Float!
+  priceSale: Float!
+  available: Boolean!
+  colors: [String!]
+  sizes: [String!]
+  discount: Float
+  averageRating: Float
+  createdAt: DateTime!
+  shop: Shop
+  brand: Brand
+  category: Category
 }
 
 type ProductResponse {
@@ -45,4 +60,28 @@ input ProductFilterInput {
 
 type Query {
   getProducts(filter: ProductFilterInput): ProductResponse!
+}
+
+
+type PaginatedProducts {
+  products: [Product!]!
+  total: Int!
+  count: Int!
+}
+
+type Query {
+  getProductsByCategory(
+    categorySlug: String!
+    brandSlug: String
+    sizes: [String!]
+    colors: [String!]
+    minPrice: Float
+    maxPrice: Float
+    isFeatured: Boolean
+    gender: [String!]
+    sortBy: String
+    sortOrder: Int
+    page: Int
+    limit: Int
+  ): PaginatedProducts!
 }
