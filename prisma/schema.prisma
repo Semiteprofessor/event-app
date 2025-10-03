@@ -331,10 +331,10 @@ model Shop {
   paymentBankName    String
   paymentAccountNo   Int
 
-  // followers: many-to-many between Shop and User
   followers User[]    @relation("ShopFollowers")
   products  Product[]
   payments  Payment[]
+  orders    Order[]   @relation("ShopOrders")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -355,10 +355,13 @@ model Order {
   currency       String
   conversionRate Float
   status         OrderStatus?
-  
-  note           String?
 
-  items    OrderItem[]
+  items OrderItem[] @relation("OrderItems")
+
+  note String?
+
+  shopId String
+  shop   Shop   @relation("ShopOrders", fields: [shopId], references: [id])
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -368,11 +371,11 @@ model Order {
 }
 
 model OrderItem {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   quantity  Int
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
   productId String
-  order     Order    @relation(fields: [orderId], references: [id])
+  order     Order   @relation("OrderItems", fields: [orderId], references: [id])
   orderId   String
 }
 
