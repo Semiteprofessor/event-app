@@ -304,5 +304,108 @@ export const productResolvers = {
         throw new GraphQLError(error.message || "Internal server error");
       }
     },
+    
+    getProductsBySubCategory: async (
+      _parent: any,
+      args: {
+        slug: string;
+        page?: number;
+        limit?: number;
+        brand?: string;
+        sizes?: string;
+        colors?: string;
+        prices?: string;
+        gender?: string;
+        isFeatured?: boolean;
+        date?: number;
+        priceSort?: number;
+        nameSort?: number;
+        top?: number;
+        rate?: number;
+      }
+    ) => {
+      const {
+        slug,
+        page = 1,
+        limit = 12,
+        brand,
+        sizes,
+        colors,
+        prices,
+        gender,
+        isFeatured,
+        date,
+        priceSort,
+        nameSort,
+        top,
+        rate = 1,
+      } = args;
+
+      const subCategory = await prisma.subCategory.findUnique({
+        where: { id: slug },
+        select: { id: true },
+      });
+
+      if (!subCategory) throw new Error("SubCategory not found");
+
+      let brandId: string | undefined;
+      if (brand) {
+        const brandRecord = await prisma.brand.findUnique({
+          where: { slug: brand },
+          select: { id: true },
+        });
+        brandId = brandRecord?.id;
+      }
+
+      const [minPrice, maxPrice] = prices
+        ? prices.split("_").map((p) => Number(p) / rate)
+        : [1, 1000000];
+
+      const where: any = {
+        subCategoryId: subCategory.id,
+        status: { not: "disabled" },
+        ...(brandId && { brandId }),
+        ...(sizes && { sizes: { hasSome: sizes.split("_") } }),
+        ...(colors && { colors: { hasSome: colors.split("_") } }),
+        ...(gender && { gender: { in: gender.split("_") } }),
+        ...(isFeatured && { isFeatured: true }),
+        priceSale: { gt: minPrice, lt: maxPrice },
+      };
+
+      const totalProducts = await prisma.product.count({ where });
+
+      let orderBy: any = { createdAt: "desc" };
+      if (date) orderBy = { createdAt: date === 1 ? "asc" : "desc" };
+      else if (priceSort)
+        orderBy = { priceSale: priceSort === 1 ? "asc" : "desc" };
+      else if (nameSort) orderBy = { name: nameSort === 1 ? "asc" : "desc" };
+      else if (top) orderBy = { likes: top === 1 ? "asc" : "desc" };
+
+      const products = await prisma.product.findMany({
+        where,
+        include: {
+          reviews: true,
+          shop: true,
+          brand: true,
+        },
+        orderBy,
+        skip: (page - 1) * limit,
+        take: limit,
+      });
+
+      const productsWithRatings = products.map((p) => {
+        const avg =
+          p.reviews.length > 0
+            ? p.reviews.reduce((acc, r) => acc + r.rating, 0) / p.reviews.length
+            : 0;
+        return { ...p, averageRating: avg };
+      });
+
+      return {
+        data: productsWithRatings,
+        total: totalProducts,
+        count: Math.ceil(totalProducts / limit),
+      };
+    },
   },
 };
