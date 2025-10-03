@@ -65,6 +65,7 @@ type InvoiceResult {
 type Query {
   userByAdmin(id: ID!, page: Int, limit: Int): UserOrdersResult!
   invoice(page: Int, limit: Int): InvoiceResult!
+  me: User!
 }
 
 type PagedOrders {
@@ -80,11 +81,14 @@ type AuthPayload {
   otp: String
 }
 
-type Query {
-  me: User!
-  userByAdmin(id: ID!, page: Int, limit: Int): PagedOrders!
-  invoice(page: Int, limit: Int): PagedOrders!
+type Mutation {
+  changePassword(
+    password: String!
+    newPassword: String!
+    confirmPassword: String!
+  ): AuthPayload!
 }
+
 
 type Mutation {
   registerUser(input: RegisterInput!): AuthPayload!

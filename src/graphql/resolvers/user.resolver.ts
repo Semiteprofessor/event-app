@@ -157,5 +157,60 @@ export const userResolvers: IResolvers = {
 
       return updatedUser;
     },
+
+    changePassword: async (
+      _parent: any,
+      { password, newPassword, confirmPassword }: any,
+      context: any
+    ) => {
+      if (!context.user?.id) {
+        throw new GraphQLError("You must be logged in.", {
+          extensions: { code: "UNAUTHENTICATED" },
+        });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: context.user.id },
+        select: { id: true, password: true },
+      });
+
+      if (!user) {
+        throw new GraphQLError("User not found.", {
+          extensions: { code: "NOT_FOUND" },
+        });
+      }
+
+      const isPasswordMatch = await bcrypt.compare(password, user.password);
+      if (!isPasswordMatch) {
+        throw new GraphQLError("Old password is incorrect.", {
+          extensions: { code: "BAD_USER_INPUT" },
+        });
+      }
+
+      if (newPassword !== confirmPassword) {
+        throw new GraphQLError("New password and confirmation do not match.", {
+          extensions: { code: "BAD_USER_INPUT" },
+        });
+      }
+
+      if (newPassword === password) {
+        throw new GraphQLError(
+          "New password cannot be the same as the old password.",
+          { extensions: { code: "BAD_USER_INPUT" } }
+        );
+      }
+
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+      await prisma.user.update({
+        where: { id: context.user.id },
+        data: { password: hashedNewPassword },
+      });
+
+      return {
+        success: true,
+        message: "Password changed successfully.",
+      };
+    },
   },
 };
