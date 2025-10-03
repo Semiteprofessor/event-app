@@ -5,35 +5,37 @@ type Image {
 
 type Product {
   id: ID!
-  name: String!
-  slug: String!
-  available: Boolean
-  colors: [String!]
-  discount: Float
+  name: String
+  code: String
+  status: String
+  isFeatured: Boolean
+  brand: Brand
   likes: Int
-  price: Float
-  priceSale: Float
-  averageRating: Float
-  vendor: String
-  shop: String
-  createdAt: String
-  image: Image
-  
-  id: ID!
-  name: String!
+  description: String
+  metaTitle: String
+  metaDescription: String
   slug: String!
+  category: Category!
+  subCategory: SubCategory!
+  gender: String
+  tags: [String!]!
+  sku: String!
   price: Float!
   priceSale: Float!
-  available: Boolean!
-  colors: [String!]
-  sizes: [String!]
-  discount: Float
+  oldPriceSale: Float
+  available: Int!
+  sold: Int
+  shop: Shop!
+  reviews: [ProductReview!]!
+  images: [ProductImage!]!
+  colors: [String!]!
+  sizes: [String!]!
   averageRating: Float
   createdAt: DateTime!
-  shop: Shop
-  brand: Brand
-  category: Category
+  updatedAt: DateTime!
 }
+
+scalar DateTime
 
 type ProductResponse {
   success: Boolean!
