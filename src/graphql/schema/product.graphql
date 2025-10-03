@@ -1,0 +1,48 @@
+type Image {
+  url: String
+  blurDataURL: String
+}
+
+type Product {
+  id: ID!
+  name: String!
+  slug: String!
+  available: Boolean
+  colors: [String!]
+  discount: Float
+  likes: Int
+  price: Float
+  priceSale: Float
+  averageRating: Float
+  vendor: String
+  shop: String
+  createdAt: String
+  image: Image
+}
+
+type ProductResponse {
+  success: Boolean!
+  data: [Product!]!
+  total: Int!
+  count: Int!
+}
+
+input ProductFilterInput {
+  page: Int
+  limit: Int
+  brand: String
+  sizes: String
+  colors: String
+  prices: String
+  date: Int
+  price: Int
+  name: Int
+  top: Int
+  gender: String
+  isFeatured: Boolean
+  rate: Float
+}
+
+type Query {
+  getProducts(filter: ProductFilterInput): ProductResponse!
+}
