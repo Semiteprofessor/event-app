@@ -16,10 +16,12 @@ export const createContext = ({ req }: { req: any }): Context => {
     const token = authHeader.replace("Bearer ", "");
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || "123456") as any;
-      user = { id: decoded.id, role: decoded.role }; // Keep only minimal info
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET || "123456"
+      ) as any;
+      user = { id: decoded.id, role: decoded.role };
     } catch (err: any) {
-      // Don't throw here — just leave user as null
       console.warn("Invalid token:", err.message);
     }
   }

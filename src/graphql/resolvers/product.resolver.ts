@@ -716,6 +716,73 @@ export const productResolvers = {
         category: product.category,
       };
     },
+
+    getFiltersByCategory: async (
+      _: unknown,
+      { shopSlug, categorySlug }: { shopSlug: string; categorySlug: string }
+    ) => {
+      const shop = await prisma.shop.findUnique({
+        where: { slug: shopSlug },
+        select: { id: true },
+      });
+
+      if (!shop) {
+        throw new Error("Shop Not Found");
+      }
+
+      const category = await prisma.category.findUnique({
+        where: { slug: categorySlug },
+        select: { id: true, name: true },
+      });
+
+      if (!category) {
+        throw new Error("Category Not Found");
+      }
+
+      const products = await prisma.product.findMany({
+        where: {
+          shopId: shop.id,
+          categoryId: category.id,
+          status: { not: "disabled" },
+        },
+        select: {
+          colors: true,
+          sizes: true,
+          gender: true,
+          price: true,
+          brandId: true,
+        },
+      });
+
+      const colors = Array.from(
+        new Set(products.flatMap((p) => p.colors || []))
+      );
+      const sizes = Array.from(new Set(products.flatMap((p) => p.sizes || [])));
+      const genders = Array.from(
+        new Set(products.map((p) => p.gender).filter(Boolean))
+      );
+
+      const prices = products.map((p) => p.price || 0);
+      const minPrice = prices.length ? Math.min(...prices) : 0;
+      const maxPrice = prices.length ? Math.max(...prices) : 100000;
+
+      const brandIds = Array.from(
+        new Set(products.map((p) => p.brandId).filter(Boolean))
+      );
+
+      const brands = await prisma.brand.findMany({
+        where: { id: { in: brandIds } },
+        select: { id: true, slug: true, name: true },
+      });
+
+      return {
+        colors,
+        sizes,
+        genders,
+        prices: [minPrice, maxPrice],
+        brands,
+      };
+    },
   },
 
   Mutation: {
@@ -823,7 +890,10 @@ export const productResolvers = {
         }
 
         if (product.images && product.images.length > 0) {
-          await cloudinaryResolvers.Mutation.uploadMultipleImages(product.images.map((img) => img.url), {});
+          await cloudinaryResolvers.Mutation.uploadMultipleImages(
+            product.images.map((img) => img.url),
+            {}
+          );
         }
 
         await prisma.product.delete({

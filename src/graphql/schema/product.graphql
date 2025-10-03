@@ -146,6 +146,8 @@ type Query {
     category: String
     brand: String
   ): ProductAdminList!
+
+  getFiltersByCategory(shopSlug: String!, categorySlug: String!): FilterResult!
 }
 
 type ProductsResult {
