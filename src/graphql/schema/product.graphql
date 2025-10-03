@@ -3,6 +3,11 @@ type Image {
   blurDataURL: String
 }
 
+type ProductImage {
+  url: String
+  blurDataURL: String
+}
+
 type Product {
   id: ID!
   name: String
@@ -132,6 +137,15 @@ type Query {
     gender: String
     isFeatured: Boolean
   ): PaginatedProducts!
+
+  getProductsByAdmin(
+    page: Int
+    limit: Int
+    search: String
+    shop: String
+    category: String
+    brand: String
+  ): ProductAdminList!
 }
 
 type ProductsResult {
@@ -139,6 +153,13 @@ type ProductsResult {
   data: [Product!]!
   total: Int!
   count: Int!
+}
+
+type ProductAdminList {
+  data: [Product!]!
+  total: Int!
+  count: Int!
+  currentPage: Int!
 }
 
 type FilterData {

@@ -585,5 +585,100 @@ export const productResolvers = {
         );
       }
     },
+
+    getProductsByAdmin: async (
+      _: any,
+      args: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        shop?: string;
+        category?: string;
+        brand?: string;
+      }
+    ) => {
+      try {
+        const {
+          page = 1,
+          limit = 10,
+          search = "",
+          shop,
+          category,
+          brand,
+        } = args;
+
+        const skip = limit * (page - 1);
+
+        const where: any = {
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
+        };
+
+        if (shop) {
+          const shopData = await prisma.shop.findUnique({
+            where: { slug: shop },
+            select: { id: true },
+          });
+          if (shopData) where.shopId = shopData.id;
+        }
+
+        if (category) {
+          const categoryData = await prisma.category.findUnique({
+            where: { slug: category },
+            select: { id: true },
+          });
+          if (categoryData) where.categoryId = categoryData.id;
+        }
+
+        if (brand) {
+          const brandData = await prisma.brand.findUnique({
+            where: { slug: brand },
+            select: { id: true },
+          });
+          if (brandData) where.brandId = brandData.id;
+        }
+
+        const totalProducts = await prisma.product.count({ where });
+
+        const products = await prisma.product.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { createdAt: "desc" },
+          include: {
+            shop: { select: { id: true, title: true, slug: true } },
+            reviews: { select: { rating: true } },
+            images: { take: 1, select: { url: true, blurDataURL: true } },
+          },
+        });
+
+        const formattedProducts = products.map((p) => {
+          const averageRating =
+            p.reviews.length > 0
+              ? p.reviews.reduce((acc, r) => acc + r.rating, 0) /
+                p.reviews.length
+              : 0;
+
+          return {
+            ...p,
+            averageRating,
+            image: p.images[0] || null,
+          };
+        });
+
+        return {
+          data: formattedProducts,
+          total: totalProducts,
+          count: Math.ceil(totalProducts / limit),
+          currentPage: page,
+        };
+      } catch (error: any) {
+        throw new GraphQLError(
+          error.message || "Failed to fetch admin products"
+        );
+      }
+    },
   },
 };
