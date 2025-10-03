@@ -1,5 +1,6 @@
 import { PrismaClient, ShopStatus } from "@prisma/client";
 import { GraphQLError } from "graphql";
+import { getAdmin } from "../../utils/getUser.js";
 const prisma = new PrismaClient();
 
 interface GetProductsArgs {
@@ -681,4 +682,45 @@ export const productResolvers = {
       }
     },
   },
+
+  Mutation: {
+    createProductByAdmin: async (_, { input }, context) => {
+      const prisma = context.prisma;
+      const admin = await getAdmin(context);
+
+      if (!admin) {
+        throw new Error("Unauthorized: Admin not found");
+      }
+
+      const { images, name, shopId, ...rest } = input;
+
+      // Generate slug
+      const slug =
+        slugify(name, { lower: true, strict: true }) + "-" + Date.now();
+
+      // Add blurDataURL to each image
+      const processedImages = await Promise.all(
+        images.map(async (image) => {
+          const blurDataURL = await blurDataUrl(image.url);
+          return { ...image, blurDataURL };
+        })
+      );
+
+      // Create product
+      const newProduct = await prisma.product.create({
+        data: {
+          name,
+          slug,
+          vendorId: admin.id,
+          shopId,
+          likes: 0,
+          images: processedImages,
+          ...rest,
+        },
+      });
+
+      return newProduct;
+    },
+  },
+};
 };
