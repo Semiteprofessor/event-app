@@ -11,7 +11,7 @@
     "skipLibCheck": true,
     "outDir": "dist",
     "moduleDetection": "force",
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
   },
   "include": ["src"],
   "ts-node": {

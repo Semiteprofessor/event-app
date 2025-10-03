@@ -1,6 +1,8 @@
 import { PrismaClient, ShopStatus } from "@prisma/client";
 import { GraphQLError } from "graphql";
+const slugify = require("slugify");
 import { getAdmin } from "../../utils/getUser.js";
+import { getBlurDataURL } from "../../utils/index.js";
 const prisma = new PrismaClient();
 
 interface GetProductsArgs {
@@ -520,6 +522,7 @@ export const productResolvers = {
         throw new GraphQLError(error.message || "Failed to fetch products");
       }
     },
+
     getFilters: async () => {
       try {
         const products = await prisma.product.findMany({
@@ -684,7 +687,11 @@ export const productResolvers = {
   },
 
   Mutation: {
-    createProductByAdmin: async (_, { input }, context) => {
+    createProductByAdmin: async (
+      _: any,
+      { input }: { input: any },
+      context: any
+    ) => {
       const prisma = context.prisma;
       const admin = await getAdmin(context);
 
@@ -700,8 +707,8 @@ export const productResolvers = {
 
       // Add blurDataURL to each image
       const processedImages = await Promise.all(
-        images.map(async (image) => {
-          const blurDataURL = await blurDataUrl(image.url);
+        images.map(async (image: any) => {
+          const blurDataURL = await getBlurDataURL(image.url);
           return { ...image, blurDataURL };
         })
       );
@@ -722,5 +729,4 @@ export const productResolvers = {
       return newProduct;
     },
   },
-};
 };
