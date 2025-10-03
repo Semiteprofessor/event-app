@@ -766,8 +766,10 @@ export const productResolvers = {
       const maxPrice = prices.length ? Math.max(...prices) : 100000;
 
       const brandIds = Array.from(
-        new Set(products.map((p) => p.brandId).filter(Boolean))
-      );
+        new Set(
+          products.map((p) => p.brandId).filter((id): id is string => !!id)
+        )
+      ).filter((id): id is string => id !== null);
 
       const brands = await prisma.brand.findMany({
         where: { id: { in: brandIds } },
@@ -779,6 +781,88 @@ export const productResolvers = {
         sizes,
         genders,
         prices: [minPrice, maxPrice],
+        brands,
+      };
+    },
+
+    getFiltersBySubCategory: async (
+      _: any,
+      args: { shopSlug: string; categorySlug: string; subcategorySlug: string },
+      { prisma }: { prisma: PrismaClient }
+    ) => {
+      const { shopSlug, categorySlug, subcategorySlug } = args;
+      const shop = await prisma.shop.findUnique({
+        where: { slug: shopSlug },
+        select: { id: true },
+      });
+
+      if (!shop) {
+        throw new GraphQLError("Shop not found", {
+          extensions: { code: "NOT_FOUND" },
+        });
+      }
+
+      const category = await prisma.category.findUnique({
+        where: { slug: categorySlug },
+        select: { id: true },
+      });
+
+      if (!category) {
+        throw new GraphQLError("Category not found", {
+          extensions: { code: "NOT_FOUND" },
+        });
+      }
+
+      const subcategory = await prisma.subCategory.findFirst({
+        where: {
+          slug: subcategorySlug,
+          categoryId: category.id,
+        },
+        select: { id: true },
+      });
+
+      if (!subcategory) {
+        throw new GraphQLError("Subcategory not found", {
+          extensions: { code: "NOT_FOUND" },
+        });
+      }
+
+      const products = await prisma.product.findMany({
+        where: {
+          status: { not: "disabled" },
+          subCategoryId: subcategory.id,
+          shopId: shop.id,
+        },
+        select: {
+          colors: true,
+          sizes: true,
+          gender: true,
+          price: true,
+          brandId: true,
+        },
+      });
+
+      const colors = [...new Set(products.flatMap((p) => p.colors || []))];
+      const sizes = [...new Set(products.flatMap((p) => p.sizes || []))];
+      const genders = [...new Set(products.flatMap((p) => p.gender || []))];
+      const prices = products.map((p) => p.price || 0);
+      const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+      const maxPrice = prices.length > 0 ? Math.max(...prices) : 100000;
+
+      const brandIds = products
+        .map((p) => p.brandId)
+        .filter((id): id is string => id !== null);
+
+      const brands = await prisma.brand.findMany({
+        where: { id: { in: brandIds } },
+        select: { id: true, slug: true, name: true },
+      });
+
+      return {
+        colors,
+        sizes,
+        prices: [minPrice, maxPrice],
+        genders,
         brands,
       };
     },
