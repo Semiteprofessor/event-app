@@ -81,14 +81,21 @@ type AuthPayload {
   otp: String
 }
 
-type Mutation {
-  changePassword(
-    password: String!
-    newPassword: String!
-    confirmPassword: String!
-  ): AuthPayload!
+input UpdateUserInput {
+  firstName: String
+  lastName: String
+  phone: String
+  gender: Gender
+  address: String
+  city: String
+  zip: String
+  country: String
+  state: String
+  about: String
+  coverUrl: String
+  coverId: String
+  coverBlurDataURL: String
 }
-
 
 type Mutation {
   registerUser(input: RegisterInput!): AuthPayload!
