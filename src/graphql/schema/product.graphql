@@ -140,3 +140,27 @@ type ProductsResult {
   total: Int!
   count: Int!
 }
+
+type FilterData {
+  colors: [String!]!
+  sizes: [String!]!
+  prices: [Float!]!
+  genders: [String!]!
+  brands: [Brand!]!
+  shops: [Shop!]!
+}
+
+extend type Query {
+  getFilters: FilterData!
+}
+
+type Brand {
+  id: ID!
+  name: String!
+  slug: String!
+}
+
+type Shop {
+  id: ID!
+  title: String!
+}
