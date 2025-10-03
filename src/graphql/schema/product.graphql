@@ -185,3 +185,22 @@ type Shop {
   id: ID!
   title: String!
 }
+
+type Mutation {
+  createProductByAdmin(input: CreateProductInput!): Product!
+}
+
+input ImageInput {
+  url: String!
+}
+
+input CreateProductInput {
+  name: String!
+  description: String
+  price: Float!
+  priceSale: Float
+  shopId: String!
+  categoryId: String
+  brandId: String
+  images: [ImageInput!]!
+}
