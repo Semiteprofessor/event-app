@@ -204,3 +204,19 @@ input CreateProductInput {
   brandId: String
   images: [ImageInput!]!
 }
+
+input UpdateProductInput {
+  name: String
+  description: String
+  price: Float
+  priceSale: Float
+  available: Int
+  status: String
+  brandId: String
+  categoryId: String
+  subCategoryId: String
+  colors: [String!]
+  sizes: [String!]
+  isFeatured: Boolean
+  images: [ProductImageInput!]!
+}

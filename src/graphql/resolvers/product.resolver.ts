@@ -684,6 +684,37 @@ export const productResolvers = {
         );
       }
     },
+
+    getOneProductByAdmin: async (_: any, { slug }: { slug: string }) => {
+      // 1️⃣ Find product by slug
+      const product = await prisma.product.findUnique({
+        where: { slug },
+        include: {
+          images: true,
+          reviews: { select: { rating: true } },
+          category: true,
+          brand: true,
+        },
+      });
+
+      if (!product) {
+        throw new Error("Product not found");
+      }
+
+      const totalReviews = product.reviews.length;
+      const totalRating =
+        totalReviews > 0
+          ? product.reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews
+          : 0;
+
+      return {
+        product,
+        totalRating,
+        totalProductReviews: totalReviews,
+        brand: product.brand,
+        category: product.category,
+      };
+    },
   },
 
   Mutation: {
@@ -729,35 +760,44 @@ export const productResolvers = {
       return newProduct;
     },
 
-    getOneProductByAdmin: async (_: any, { slug }: { slug: string }) => {
-      // 1️⃣ Find product by slug
-      const product = await prisma.product.findUnique({
+    updateProductByAdmin: async (
+      _: any,
+      { slug, data }: { slug: string; data: any },
+      context: any
+    ) => {
+      const admin = await getAdmin(context);
+      if (!admin) throw new Error("Unauthorized");
+
+      const updatedImages = await Promise.all(
+        data.images.map(async (image: { url: string }) => {
+          const blurDataURL = await getBlurDataURL(image.url);
+          return { url: image.url, blurDataURL };
+        })
+      );
+
+      const updatedProduct = await prisma.product.update({
         where: { slug },
+        data: {
+          ...data,
+          images: {
+            deleteMany: {},
+            create: updatedImages,
+          },
+          vendorId: admin.id,
+        },
         include: {
           images: true,
-          reviews: { select: { rating: true } },
-          category: true,
           brand: true,
+          category: true,
+          subCategory: true,
         },
       });
 
-      if (!product) {
-        throw new Error("Product not found");
+      if (!updatedProduct) {
+        throw new Error("Product not found or you are not the owner");
       }
 
-      const totalReviews = product.reviews.length;
-      const totalRating =
-        totalReviews > 0
-          ? product.reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews
-          : 0;
-
-      return {
-        product,
-        totalRating,
-        totalProductReviews: totalReviews,
-        brand: product.brand,
-        category: product.category,
-      };
+      return updatedProduct;
     },
   },
 };
