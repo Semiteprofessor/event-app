@@ -304,7 +304,7 @@ export const productResolvers = {
         throw new GraphQLError(error.message || "Internal server error");
       }
     },
-    
+
     getProductsBySubCategory: async (
       _parent: any,
       args: {
@@ -406,6 +406,118 @@ export const productResolvers = {
         total: totalProducts,
         count: Math.ceil(totalProducts / limit),
       };
+    },
+
+    productsByShop: async (
+      _: any,
+      args: {
+        shopSlug: string;
+        page?: number;
+        limit?: number;
+        prices?: string;
+        sizes?: string;
+        colors?: string;
+        name?: number;
+        date?: number;
+        price?: number;
+        top?: number;
+        brand?: string;
+        rate?: number;
+        gender?: string;
+        isFeatured?: boolean;
+      }
+    ) => {
+      try {
+        const {
+          shopSlug,
+          page = 1,
+          limit = 12,
+          prices,
+          sizes,
+          colors,
+          brand,
+          rate = 1,
+          gender,
+          isFeatured,
+          name,
+          date,
+          price,
+          top,
+        } = args;
+
+        const shop = await prisma.shop.findUnique({
+          where: { slug: shopSlug },
+        });
+        if (!shop) throw new GraphQLError("Shop not found");
+
+        let brandRecord = null;
+        if (brand) {
+          brandRecord = await prisma.brand.findUnique({
+            where: { slug: brand },
+          });
+        }
+
+        const minPrice = prices ? Number(prices.split("_")[0]) / rate : 1;
+        const maxPrice = prices
+          ? Number(prices.split("_")[1]) / rate
+          : 10000000;
+
+        const whereClause: any = {
+          shopId: shop.id,
+          status: { not: "disabled" },
+        };
+
+        if (brandRecord) whereClause.brandId = brandRecord.id;
+        if (sizes) whereClause.sizes = { hasSome: sizes.split("_") };
+        if (colors) whereClause.colors = { hasSome: colors.split("_") };
+        if (gender) whereClause.gender = { in: gender.split("_") };
+        if (isFeatured !== undefined) whereClause.isFeatured = isFeatured;
+        if (prices) whereClause.priceSale = { gt: minPrice, lt: maxPrice };
+
+        let orderBy: any = { averageRating: "desc" };
+        if (date) orderBy = { createdAt: date === 1 ? "asc" : "desc" };
+        if (price) orderBy = { priceSale: price === 1 ? "asc" : "desc" };
+        if (name) orderBy = { name: name === 1 ? "asc" : "desc" };
+        if (top) orderBy = { averageRating: top === 1 ? "asc" : "desc" };
+
+        const total = await prisma.product.count({
+          where: whereClause,
+        });
+
+        const products = await prisma.product.findMany({
+          where: whereClause,
+          include: {
+            shop: true,
+            reviews: true,
+            images: true,
+          },
+          orderBy,
+          skip: (page - 1) * limit,
+          take: limit,
+        });
+
+        const result = products.map((p) => {
+          const averageRating =
+            p.reviews.length > 0
+              ? p.reviews.reduce((acc, r) => acc + r.rating, 0) /
+                p.reviews.length
+              : 0;
+
+          return {
+            ...p,
+            averageRating,
+            image: p.images?.[0] || null,
+          };
+        });
+
+        return {
+          data: result,
+          total,
+          count: Math.ceil(total / limit),
+        };
+      } catch (error: any) {
+        throw new GraphQLError(error.message || "Failed to fetch products");
+      }
     },
   },
 };
