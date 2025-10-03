@@ -90,5 +90,104 @@ export const productResolvers = {
         throw new Error("Failed to fetch products: " + error.message);
       }
     },
+
+    getProductsByCategory: async (
+      _parent: any,
+      args: {
+        categorySlug: string;
+        brandSlug?: string;
+        sizes?: string[];
+        colors?: string[];
+        minPrice?: number;
+        maxPrice?: number;
+        isFeatured?: boolean;
+        gender?: string[];
+        sortBy?: string;
+        sortOrder?: number;
+        page?: number;
+        limit?: number;
+      }
+    ) => {
+      const {
+        categorySlug,
+        brandSlug,
+        sizes,
+        colors,
+        minPrice = 1,
+        maxPrice = 1000000,
+        isFeatured,
+        gender,
+        sortBy = "averageRating",
+        sortOrder = -1,
+        page = 1,
+        limit = 12,
+      } = args;
+
+      const category = await prisma.category.findUnique({
+        where: { slug: categorySlug },
+      });
+      if (!category) throw new Error("Category not found");
+
+      let brandId: string | undefined;
+      if (brandSlug) {
+        const brand = await prisma.brand.findUnique({
+          where: { slug: brandSlug },
+        });
+        if (!brand) throw new Error("Brand not found");
+        brandId = brand.id;
+      }
+
+      const skip = (page - 1) * limit;
+
+      const where: any = {
+        categoryId: category.id,
+        status: { not: "disabled" },
+        priceSale: {
+          gte: minPrice,
+          lte: maxPrice,
+        },
+      };
+
+      if (brandId) where.brandId = brandId;
+      if (sizes && sizes.length > 0) where.sizes = { hasSome: sizes };
+      if (colors && colors.length > 0) where.colors = { hasSome: colors };
+      if (gender && gender.length > 0) where.gender = { in: gender };
+      if (isFeatured !== undefined) where.isFeatured = isFeatured;
+
+      const totalProducts = await prisma.product.count({ where });
+
+      const products = await prisma.product.findMany({
+        where,
+        include: {
+          shop: true,
+          brand: true,
+          category: true,
+          reviews: true,
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          [sortBy]: sortOrder === -1 ? "desc" : "asc",
+        },
+      });
+
+      const productsWithRatings = products.map((p) => {
+        const avgRating =
+          p.reviews.length > 0
+            ? p.reviews.reduce((acc, r) => acc + r.rating, 0) / p.reviews.length
+            : 0;
+
+        return {
+          ...p,
+          averageRating: avgRating,
+        };
+      });
+
+      return {
+        products: productsWithRatings,
+        total: totalProducts,
+        count: Math.ceil(totalProducts / limit),
+      };
+    },
   },
 };
