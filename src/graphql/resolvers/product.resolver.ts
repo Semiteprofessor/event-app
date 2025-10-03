@@ -928,6 +928,18 @@ export const productResolvers = {
         brands,
       };
     },
+
+    getAllProductSlugs: async () => {
+      try {
+        const products = await prisma.product.findMany({
+          select: { slug: true },
+        });
+
+        return products;
+      } catch (error: any) {
+        throw new Error(`Failed to fetch product slugs: ${error.message}`);
+      }
+    },
   },
 
   Mutation: {
