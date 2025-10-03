@@ -115,6 +115,23 @@ type Query {
     top: Int
     rate: Float
   ): ProductPagination!
+
+  productsByShop(
+    shopSlug: String!
+    page: Int
+    limit: Int
+    prices: String
+    sizes: String
+    colors: String
+    name: Int
+    date: Int
+    price: Int
+    top: Int
+    brand: String
+    rate: Float
+    gender: String
+    isFeatured: Boolean
+  ): PaginatedProducts!
 }
 
 type ProductsResult {
