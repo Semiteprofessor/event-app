@@ -80,10 +80,8 @@ export const userResolvers: IResolvers = {
       { page = 1, limit = 10 }: { page?: number; limit?: number },
       context: any
     ) => {
-      
       const user = await getUser(context, true);
 
-      
       const pageNumber = Math.max(page, 1);
       const pageSize = Math.max(limit, 1);
       const skip = (pageNumber - 1) * pageSize;
@@ -98,8 +96,8 @@ export const userResolvers: IResolvers = {
         take: pageSize,
         orderBy: { createdAt: "desc" },
         include: {
-          items: true, // Optional: include order items if your schema has them
-          shop: true, // Optional: include shop details
+          items: true,
+          shop: true,
         },
       });
 
@@ -112,41 +110,52 @@ export const userResolvers: IResolvers = {
   },
 
   Mutation: {
-    updateUser: async (_parent, { data }, context) => {
-      const user = await getUser(context.req, context.res);
-      const updatedUser = await User.findByIdAndUpdate(user._id, data, {
-        new: true,
-        runValidators: true,
-      }).select("-password");
+    updateUser: async (_parent: any, { input }: any, context: any) => {
+      if (!context.user?.id) {
+        throw new GraphQLError("You must be logged in.", {
+          extensions: { code: "UNAUTHENTICATED" },
+        });
+      }
 
-      if (!updatedUser) throw new Error("User Not Found");
+      const existingUser = await prisma.user.findUnique({
+        where: { id: context.user.id },
+      });
+
+      if (!existingUser) {
+        throw new GraphQLError("User not found.", {
+          extensions: { code: "NOT_FOUND" },
+        });
+      }
+
+      const updatedUser = await prisma.user.update({
+        where: { id: context.user.id },
+        data: {
+          ...input,
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          gender: true,
+          phone: true,
+          address: true,
+          city: true,
+          zip: true,
+          country: true,
+          state: true,
+          about: true,
+          coverUrl: true,
+          coverId: true,
+          coverBlurDataURL: true,
+          isVerified: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
       return updatedUser;
-    },
-
-    changePassword: async (
-      _parent,
-      { password, newPassword, confirmPassword },
-      context
-    ) => {
-      const user = await getUser(context.req, context.res);
-      const existingUser = await User.findById(user._id).select("password");
-      if (!existingUser) throw new Error("User Not Found");
-
-      const passwordMatch = await bcrypt.compare(
-        password,
-        existingUser.password
-      );
-      if (!passwordMatch) throw new Error("Old Password Incorrect");
-
-      if (newPassword !== confirmPassword)
-        throw new Error("New Password Mismatch");
-      if (password === newPassword)
-        throw new Error("Please enter a new password");
-
-      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-      await User.findByIdAndUpdate(user._id, { password: hashedNewPassword });
-
-      return "Password Changed Successfully";
     },
   },
 };
