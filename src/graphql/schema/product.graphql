@@ -148,6 +148,12 @@ type Query {
   ): ProductAdminList!
 
   getFiltersByCategory(shopSlug: String!, categorySlug: String!): FilterResult!
+
+  getFiltersBySubCategory(
+    shopSlug: String!
+    categorySlug: String!
+    subcategorySlug: String!
+  ): Filters!
 }
 
 type ProductsResult {

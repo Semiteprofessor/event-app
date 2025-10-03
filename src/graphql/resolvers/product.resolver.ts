@@ -687,7 +687,6 @@ export const productResolvers = {
     },
 
     getOneProductByAdmin: async (_: any, { slug }: { slug: string }) => {
-      // 1️⃣ Find product by slug
       const product = await prisma.product.findUnique({
         where: { slug },
         include: {
@@ -800,11 +799,9 @@ export const productResolvers = {
 
       const { images, name, shopId, ...rest } = input;
 
-      // Generate slug
       const slug =
         slugify(name, { lower: true, strict: true }) + "-" + Date.now();
 
-      // Add blurDataURL to each image
       const processedImages = await Promise.all(
         images.map(async (image: any) => {
           const blurDataURL = await getBlurDataURL(image.url);
@@ -812,7 +809,6 @@ export const productResolvers = {
         })
       );
 
-      // Create product
       const newProduct = await prisma.product.create({
         data: {
           name,
