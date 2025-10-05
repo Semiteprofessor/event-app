@@ -48,7 +48,9 @@ const Product = objectType({
 
 const ProductInput = inputObjectType({
   name: "ProductInput",
-  definition(t: import("nexus/dist/core").InputDefinitionBlock<"ProductInput">) {
+  definition(
+    t: import("nexus/dist/core").InputDefinitionBlock<"ProductInput">
+  ) {
     t.nonNull.string("name");
     t.nonNull.string("slug");
     t.string("code");
@@ -73,12 +75,44 @@ const ProductInput = inputObjectType({
   },
 });
 
+interface CreateProductArgs {
+  data: ProductInputType;
+}
+
+interface ProductInputType {
+  name: string;
+  slug: string;
+  code?: string | null;
+  status?: string | null;
+  isFeatured?: boolean | null;
+  brandId?: string | null;
+  description?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  categoryId: string;
+  subCategoryId: string;
+  gender?: string | null;
+  tags?: string[] | null;
+  sku: string;
+  price: number;
+  priceSale: number;
+  oldPriceSale?: number | null;
+  available: number;
+  shopId?: string | null;
+  colors?: string[] | null;
+  sizes?: string[] | null;
+}
+
+interface Context {
+  prisma: any;
+}
+
 const createProduct = mutationField("createProduct", {
   type: "Product",
   args: {
     data: nonNull("ProductInput"),
   },
-  resolve: async (_, { data }, ctx) => {
+  resolve: async (_: unknown, { data }: CreateProductArgs, ctx: Context) => {
     const product = await ctx.prisma.product.create({
       data: {
         name: data.name,
