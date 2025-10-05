@@ -975,6 +975,109 @@ export const productResolvers = {
           : null,
       }));
     },
+
+    productBySlug: async (_: any, { slug }: { slug: string }, context: any) => {
+      const userId = context?.user?.id;
+
+      const product = await prisma.product.findUnique({
+        where: { slug },
+        include: {
+          category: true,
+          brand: true,
+          images: { take: 1 },
+          reviews: true,
+        },
+      });
+
+      if (!product) {
+        throw new Error("Product not found");
+      }
+
+      const totalReviews = product.reviews.length;
+      const averageRating =
+        totalReviews > 0
+          ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
+          : 0;
+
+      let userInteractionProductIds: string[] = [];
+      if (userId) {
+        const [purchases, likedProducts] = await Promise.all([
+          prisma.order.findMany({
+            where: { userId },
+            include: { products: true },
+          }),
+          prisma.product.findMany({
+            where: { likes: { some: { id: userId } } },
+            select: { id: true },
+          }),
+        ]);
+
+        const purchasedIds = purchases.flatMap((order) =>
+          order.products.map((p) => p.productId)
+        );
+        const likedIds = likedProducts.map((p) => p.id);
+        userInteractionProductIds = [
+          ...new Set([...purchasedIds, ...likedIds]),
+        ];
+      }
+
+      // 4. Hybrid Recommendations
+      const recommendations = await prisma.product.findMany({
+        where: {
+          id: { not: product.id },
+          OR: [
+            userInteractionProductIds.length > 0
+              ? { id: { in: userInteractionProductIds } }
+              : undefined,
+            product.categoryId ? { categoryId: product.categoryId } : undefined,
+            product.brandId ? { brandId: product.brandId } : undefined,
+          ].filter(Boolean) as any,
+        },
+        take: 8,
+        include: {
+          images: { take: 1 },
+          reviews: true,
+        },
+        orderBy: [{ likes: "desc" }, { createdAt: "desc" }],
+      });
+
+      // 5. Map recommendations (add average rating + image)
+      const recs = recommendations.map((p) => ({
+        ...p,
+        averageRating:
+          p.reviews.length > 0
+            ? p.reviews.reduce((sum, r) => sum + r.rating, 0) / p.reviews.length
+            : 0,
+        image: p.images[0]
+          ? { url: p.images[0].url, blurDataURL: p.images[0].blurDataURL }
+          : null,
+      }));
+
+      // 6. Return response
+      return {
+        product: {
+          ...product,
+          averageRating,
+          totalReviews,
+          image: product.images[0]
+            ? {
+                url: product.images[0].url,
+                blurDataURL: product.images[0].blurDataURL,
+              }
+            : null,
+        },
+        totalReviews,
+        totalRating: averageRating,
+        brand: product.brand?.name,
+        category: product.category
+          ? {
+              name: product.category.name,
+              slug: product.category.slug,
+            }
+          : null,
+        recommendations: recs,
+      };
+    },
   },
 
   Mutation: {

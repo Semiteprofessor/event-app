@@ -358,6 +358,8 @@ model Order {
 
   items OrderItem[] @relation("OrderItems")
 
+  products OrderItem[] @relation("OrderProducts")
+
   note String?
 
   shopId String
@@ -377,6 +379,9 @@ model OrderItem {
   productId String
   order     Order   @relation("OrderItems", fields: [orderId], references: [id])
   orderId   String
+
+  orderProducts   Order?  @relation("OrderProducts", fields: [orderProductsId], references: [id])
+  orderProductsId String?
 }
 
 model Compaign {
