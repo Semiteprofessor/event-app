@@ -1,5 +1,11 @@
-import { GraphQLUpload } from "graphql-upload";
-import cloudinary from "../../utils/cloudinary.js";
+const { GraphQLUpload } = require("graphql-upload");
+const cloudinary = require("../../utils/cloudinary.js");
+
+type CloudinaryUploadResult = {
+  public_id: string;
+  secure_url: string;
+  [key: string]: any;
+};
 
 export const cloudinaryResolvers = {
   Upload: GraphQLUpload,
@@ -9,9 +15,9 @@ export const cloudinaryResolvers = {
       const { createReadStream } = await file;
 
       const uploadResult = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
+        const stream: NodeJS.WritableStream = cloudinary.uploader.upload_stream(
           { folder: "uploads" },
-          (error, result) => {
+          (error: Error | null, result: CloudinaryUploadResult | undefined) => {
             if (error) reject(error);
             else resolve(result);
           }
@@ -33,7 +39,7 @@ export const cloudinaryResolvers = {
           const uploadResult = await new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
               { folder: "uploads" },
-              (error, result) => {
+              (error: any, result: any) => {
                 if (error) reject(error);
                 else resolve(result);
               }

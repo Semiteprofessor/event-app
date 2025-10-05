@@ -1,8 +1,8 @@
-import { PrismaClient, ShopStatus } from "@prisma/client";
-import { GraphQLError } from "graphql";
-import { getAdmin } from "../../utils/getUser.js";
-import { getBlurDataURL } from "../../utils/index.js";
-import { cloudinaryResolvers } from "./cloudinary.js";
+const { PrismaClient } = require("@prisma/client");
+const { GraphQLError } = require("graphql");
+const { getAdmin } = require("../../utils/getUser");
+const { getBlurDataURL } = require("../../utils/index");
+const { cloudinaryResolvers } = require("./cloudinary");
 const slugify = require("slugify");
 const prisma = new PrismaClient();
 
@@ -33,7 +33,7 @@ interface GetProductsByCompaignArgs {
   top?: number;
   rate?: number;
 }
-export const productResolvers = {
+const productResolvers = {
   Query: {
     getProducts: async (_: any, { filter }: any) => {
       try {
@@ -1252,3 +1252,5 @@ export const productResolvers = {
     },
   },
 };
+
+module.exports = { productResolvers };
