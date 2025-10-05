@@ -1007,7 +1007,7 @@ export const productResolvers = {
             include: { products: true },
           }),
           prisma.product.findMany({
-            where: { likes: { some: { id: userId } } },
+            // where: { likes: { some: { id: userId } } },
             select: { id: true },
           }),
         ]);
@@ -1077,6 +1077,44 @@ export const productResolvers = {
           : null,
         recommendations: recs,
       };
+    },
+
+    compareProducts: async (_: any, { ids }: { ids: string[] }) => {
+      const products = await prisma.product.findMany({
+        where: { id: { in: ids } },
+        include: {
+          brand: true,
+          shop: true,
+          images: { take: 1 },
+          reviews: true,
+        },
+      });
+
+      return products.map((p) => {
+        const totalReviews = p.reviews.length;
+        const averageRating =
+          totalReviews > 0
+            ? p.reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
+            : 0;
+
+        return {
+          id: p.id,
+          name: p.name,
+          slug: p.slug,
+          available: p.available,
+          sizes: p.sizes,
+          colors: p.colors,
+          price: p.price,
+          priceSale: p.priceSale,
+          brandName: p.brand?.name ?? null,
+          shopName: p.shop?.title ?? null,
+          image: p.images[0]
+            ? { url: p.images[0].url, blurDataURL: p.images[0].blurDataURL }
+            : null,
+          totalReviews,
+          averageRating,
+        };
+      });
     },
   },
 
