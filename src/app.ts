@@ -1,6 +1,6 @@
 const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
-const { schema } = require("./schema/graphql.js");
+const { schema } = require("./schema/graphql");
 const { createContext } = require("./context.js");
 
 async function createServer() {

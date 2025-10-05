@@ -1,7 +1,7 @@
 
-export * from "./Event.js";
-export * from "./Activity.js";
-export * from "./Ticket.js";
-export * from "./User.js";
-export { InstallmentConfig } from "./Installment.js";
-export * from "./Installment.js";
+export * from "./Product";
+export * from "./Activity";
+export * from "./Ticket";
+export * from "./User";
+export { InstallmentConfig } from "./Installment";
+export * from "./Installment";

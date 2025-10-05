@@ -2,7 +2,7 @@ require("dotenv/config");
 
 import * as http from "http";
 const express = require("express");
-const { createServer } = require("./app.js");
+const { createServer } = require("./app");
 const { logger } = require("./lib/logger.js");
 const { context: otelContext, trace, Span } = require("@opentelemetry/api");
 const { dashboardRouter } = require("./server/queue-dashboard.js");
