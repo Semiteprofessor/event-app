@@ -1,15 +1,11 @@
-import { Queue } from "bullmq";
-import { redis } from "../redis.js";
+const { Queue } = require("bullmq");
+const { redis } = require("../redis");
 
-export const emailQueue = new Queue("emailQueue", {
+const emailQueue = new Queue("emailQueue", {
   connection: redis,
 });
 
-export async function addEmailJob(data: {
-  to: string;
-  subject: string;
-  body: string;
-}) {
+async function addEmailJob(data: any) {
   await emailQueue.add("sendEmail", data, {
     attempts: 3,
     backoff: 5000,
@@ -17,3 +13,5 @@ export async function addEmailJob(data: {
     removeOnFail: false,
   });
 }
+
+module.exports = { emailQueue, addEmailJob };
