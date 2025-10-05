@@ -1,3 +1,17 @@
+scalar DateTime
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+}
+
+type ReviewImage {
+  id: ID!
+  url: String!
+  blurDataURL: String
+}
+
 type Image {
   url: String
   blurDataURL: String
@@ -6,6 +20,30 @@ type Image {
 type ProductImage {
   url: String
   blurDataURL: String
+}
+
+type Brand {
+  id: ID!
+  name: String!
+  slug: String!
+}
+
+type Shop {
+  id: ID!
+  title: String!
+}
+
+type Category {
+  id: ID!
+  name: String!
+  slug: String!
+}
+
+type SubCategory {
+  id: ID!
+  name: String!
+  slug: String!
+  category: Category!
 }
 
 type ProductReview {
@@ -19,7 +57,6 @@ type ProductReview {
   createdAt: DateTime!
   updatedAt: DateTime!
 }
-
 
 type Product {
   id: ID!
@@ -53,8 +90,6 @@ type Product {
   updatedAt: DateTime!
 }
 
-scalar DateTime
-
 type ProductResponse {
   success: Boolean!
   data: [Product!]!
@@ -76,10 +111,6 @@ input ProductFilterInput {
   gender: String
   isFeatured: Boolean
   rate: Float
-}
-
-type Query {
-  getProducts(filter: ProductFilterInput): ProductResponse!
 }
 
 type PaginatedProducts {
@@ -113,7 +144,39 @@ type ProductCompare {
   averageRating: Float
 }
 
-type Query {
+type ProductsResult {
+  success: Boolean!
+  data: [Product!]!
+  total: Int!
+  count: Int!
+}
+
+type ProductAdminList {
+  data: [Product!]!
+  total: Int!
+  count: Int!
+  currentPage: Int!
+}
+
+type FilterData {
+  colors: [String!]!
+  sizes: [String!]!
+  prices: [Float!]!
+  genders: [String!]!
+  brands: [Brand!]!
+  shops: [Shop!]!
+}
+
+type ShopFilters {
+  colors: [String!]!
+  sizes: [String!]!
+  genders: [String!]!
+  prices: [Float!]!
+  brands: [Brand!]!
+}
+
+extend type Query {
+  getProducts(filter: ProductFilterInput): ProductResponse!
   getProductsByCategory(
     categorySlug: String!
     brandSlug: String
@@ -186,66 +249,16 @@ type Query {
   ): ProductAdminList!
 
   getFiltersByCategory(shopSlug: String!, categorySlug: String!): FilterResult!
-
   getFiltersBySubCategory(
     shopSlug: String!
     categorySlug: String!
     subcategorySlug: String!
   ): Filters!
-
   getFiltersByShop(shopSlug: String!): ShopFilters!
-
   relatedProducts(pid: ID!): [Product!]!
-
   productBySlug(slug: String!): ProductDetail
-
   compareProducts(ids: [ID!]!): [ProductCompare!]!
-}
-
-type ProductsResult {
-  success: Boolean!
-  data: [Product!]!
-  total: Int!
-  count: Int!
-}
-
-type ProductAdminList {
-  data: [Product!]!
-  total: Int!
-  count: Int!
-  currentPage: Int!
-}
-
-type FilterData {
-  colors: [String!]!
-  sizes: [String!]!
-  prices: [Float!]!
-  genders: [String!]!
-  brands: [Brand!]!
-  shops: [Shop!]!
-}
-
-type ShopFilters {
-  colors: [String!]!
-  sizes: [String!]!
-  genders: [String!]!
-  prices: [Float!]!
-  brands: [Brand!]!
-}
-
-extend type Query {
   getFilters: FilterData!
-}
-
-type Brand {
-  id: ID!
-  name: String!
-  slug: String!
-}
-
-type Shop {
-  id: ID!
-  title: String!
 }
 
 type Mutation {
@@ -259,6 +272,10 @@ type DeleteResponse {
 }
 
 input ImageInput {
+  url: String!
+}
+
+input ProductImageInput {
   url: String!
 }
 
