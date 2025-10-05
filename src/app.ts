@@ -1,9 +1,9 @@
-import express from "express";
-import { ApolloServer } from "apollo-server-express";
-import { schema } from "./schema/graphql.js";
-import { createContext } from "./context.js";
+const express = require("express");
+const { ApolloServer } = require("apollo-server-express");
+const { schema } = require("./schema/graphql.js");
+const { createContext } = require("./context.js");
 
-export async function createServer() {
+async function createServer() {
   const app = express();
 
   const server = new ApolloServer({
@@ -17,3 +17,5 @@ export async function createServer() {
 
   return app;
 }
+
+module.exports = { createServer };

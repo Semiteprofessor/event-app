@@ -1,10 +1,14 @@
-import "dotenv/config";
-import http from "http";
-import express, { Request } from "express";
-import { createServer } from "./app.js";
-import { logger } from "./lib/logger.js";
-import { context as otelContext, trace, Span } from "@opentelemetry/api";
-import { dashboardRouter } from "./server/queue-dashboard.js";
+require("dotenv/config");
+
+import * as http from "http";
+const express = require("express");
+const { createServer } = require("./app.js");
+const { logger } = require("./lib/logger.js");
+const { context: otelContext, trace, Span } = require("@opentelemetry/api");
+const { dashboardRouter } = require("./server/queue-dashboard.js");
+import type { Request, Response } from "express";
+import type { IncomingMessage, ServerResponse } from "http";
+import type { Tracer, Span as OtelSpan } from "@opentelemetry/api";
 
 async function start(): Promise<void> {
   try {
@@ -24,45 +28,58 @@ async function start(): Promise<void> {
     rootApp.use("/admin/queues", dashboardRouter);
 
     // ✅ Health check route
-    rootApp.get("/health", (req, res) => {
+    interface HealthResponse {
+      status: string;
+    }
+
+    rootApp.get("/health", (req: Request, res: Response<HealthResponse>) => {
       res.status(200).json({ status: "ok" });
     });
 
     // ✅ Wrap server with OpenTelemetry tracing
-    const server = http.createServer((req, res) => {
-      const startTime = Date.now();
-      const tracer = trace.getTracer("http-server");
+    interface RequestLogInfo {
+      method?: string;
+      url?: string;
+      statusCode?: number;
+      durationMs: number;
+      traceId: string;
+    }
 
-      const span: Span = tracer.startSpan("http_request", {
-        attributes: {
-          "http.method": req.method || "UNKNOWN",
-          "http.url": req.url || "UNKNOWN",
-        },
-      });
+    const server: http.Server = http.createServer(
+      (req: IncomingMessage, res: ServerResponse) => {
+        const startTime: number = Date.now();
+        const tracer: Tracer = trace.getTracer("http-server");
 
-      res.on("finish", () => {
-        const duration = Date.now() - startTime;
+        const span: OtelSpan = tracer.startSpan("http_request", {
+          attributes: {
+            "http.method": req.method || "UNKNOWN",
+            "http.url": req.url || "UNKNOWN",
+          },
+        });
 
-        logger.info(
-          {
+        res.on("finish", () => {
+          const duration: number = Date.now() - startTime;
+
+          const logInfo: RequestLogInfo = {
             method: req.method,
             url: req.url,
             statusCode: res.statusCode,
             durationMs: duration,
             traceId: span.spanContext().traceId,
-          },
-          "✅ Request handled"
-        );
+          };
 
-        span.setAttribute("http.status_code", res.statusCode);
-        span.setAttribute("http.response_time_ms", duration);
-        span.end();
-      });
+          logger.info(logInfo, "✅ Request handled");
 
-      otelContext.with(trace.setSpan(otelContext.active(), span), () => {
-        rootApp(req, res);
-      });
-    });
+          span.setAttribute("http.status_code", res.statusCode);
+          span.setAttribute("http.response_time_ms", duration);
+          span.end();
+        });
+
+        otelContext.with(trace.setSpan(otelContext.active(), span), () => {
+          rootApp(req, res);
+        });
+      }
+    );
 
     // ✅ Start the server
     server.listen(port, () => {
