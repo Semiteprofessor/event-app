@@ -84,6 +84,22 @@ type ProductDetail {
   recommendations: [Product!]!
 }
 
+type ProductCompare {
+  id: ID!
+  name: String!
+  slug: String!
+  available: Boolean
+  sizes: [String!]
+  colors: [String!]
+  price: Float
+  priceSale: Float
+  brandName: String
+  shopName: String
+  image: Image
+  totalReviews: Int
+  averageRating: Float
+}
+
 type Query {
   getProductsByCategory(
     categorySlug: String!
@@ -169,6 +185,8 @@ type Query {
   relatedProducts(pid: ID!): [Product!]!
 
   productBySlug(slug: String!): ProductDetail
+
+  compareProducts(ids: [ID!]!): [ProductCompare!]!
 }
 
 type ProductsResult {
