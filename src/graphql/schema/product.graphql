@@ -8,6 +8,19 @@ type ProductImage {
   blurDataURL: String
 }
 
+type ProductReview {
+  id: ID!
+  user: User!
+  product: Product!
+  review: String!
+  rating: Int!
+  isPurchased: Boolean!
+  images: [ReviewImage!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+
 type Product {
   id: ID!
   name: String

@@ -1,11 +1,26 @@
-declare module "graphql-upload" {
-  import { RequestHandler } from "express";
-  import { GraphQLScalarType } from "graphql";
+const { GraphQLScalarType } = require("graphql");
 
-  export const graphqlUploadExpress: (options?: {
-    maxFileSize?: number;
-    maxFiles?: number;
-  }) => RequestHandler;
-
-  export const GraphQLUpload: GraphQLScalarType;
+function graphqlUploadExpress(options) {
+  return function (req, res, next) {
+    next();
+  };
 }
+
+const GraphQLUpload = new GraphQLScalarType({
+  name: "Upload",
+  description: "The `Upload` scalar type represents a file upload.",
+  parseValue(value) {
+    return value;
+  },
+  serialize(value) {
+    return value;
+  },
+  parseLiteral(ast) {
+    return ast.value;
+  },
+});
+
+module.exports = {
+  graphqlUploadExpress,
+  GraphQLUpload,
+};
