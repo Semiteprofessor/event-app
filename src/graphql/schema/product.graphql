@@ -156,6 +156,8 @@ type Query {
   ): Filters!
 
   getFiltersByShop(shopSlug: String!): ShopFilters!
+
+  relatedProducts(pid: ID!): [Product!]!
 }
 
 type ProductsResult {

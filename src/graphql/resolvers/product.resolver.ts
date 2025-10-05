@@ -940,6 +940,41 @@ export const productResolvers = {
         throw new Error(`Failed to fetch product slugs: ${error.message}`);
       }
     },
+
+    relatedProducts: async (_: any, { pid }: { pid: string }) => {
+      const product = await prisma.product.findUnique({
+        where: { id: pid },
+        select: { id: true, category: true },
+      });
+
+      if (!product) {
+        throw new Error("Product not found");
+      }
+
+      const related = await prisma.product.findMany({
+        where: {
+          category: product.category,
+          NOT: { id: product.id },
+        },
+        take: 8,
+        include: {
+          images: { take: 1 },
+          reviews: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return related.map((p) => ({
+        ...p,
+        averageRating:
+          p.reviews.length > 0
+            ? p.reviews.reduce((sum, r) => sum + r.rating, 0) / p.reviews.length
+            : null,
+        image: p.images[0]
+          ? { url: p.images[0].url, blurDataURL: p.images[0].blurDataURL }
+          : null,
+      }));
+    },
   },
 
   Mutation: {
