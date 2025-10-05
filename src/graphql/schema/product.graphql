@@ -75,6 +75,15 @@ type PaginatedProducts {
   count: Int!
 }
 
+type ProductDetail {
+  product: Product!
+  totalReviews: Int!
+  totalRating: Float!
+  brand: String
+  category: Category
+  recommendations: [Product!]!
+}
+
 type Query {
   getProductsByCategory(
     categorySlug: String!
@@ -158,6 +167,8 @@ type Query {
   getFiltersByShop(shopSlug: String!): ShopFilters!
 
   relatedProducts(pid: ID!): [Product!]!
+
+  productBySlug(slug: String!): ProductDetail
 }
 
 type ProductsResult {
