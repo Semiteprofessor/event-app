@@ -1,5 +1,5 @@
 const { GraphQLUpload } = require("graphql-upload");
-const cloudinary = require("../../utils/cloudinary.js");
+const cloudinary = require("../../utils/cloudinary");
 
 type CloudinaryUploadResult = {
   public_id: string;

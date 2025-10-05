@@ -1,10 +1,11 @@
-import { Router } from "express";
-import { createBullBoard } from "@bull-board/api";
-import { ExpressAdapter } from "@bull-board/express";
-import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
-import { emailQueue } from "../lib/queues/emailQueue.js";
+const express = require("express");
+const { createBullBoard } = require("@bull-board/api");
+const { ExpressAdapter } = require("@bull-board/express");
+const { BullMQAdapter } = require("@bull-board/api/bullMQAdapter");
+const { emailQueue } = require("../lib/queues/emailQueue");
 
 const serverAdapter = new ExpressAdapter();
+
 createBullBoard({
   queues: [new BullMQAdapter(emailQueue)],
   serverAdapter,
@@ -12,4 +13,6 @@ createBullBoard({
 
 serverAdapter.setBasePath("/admin/queues");
 
-export const dashboardRouter: Router = serverAdapter.getRouter();
+const dashboardRouter = serverAdapter.getRouter();
+
+module.exports = { dashboardRouter };
