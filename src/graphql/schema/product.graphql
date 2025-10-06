@@ -2,8 +2,27 @@ scalar DateTime
 
 type User {
   id: ID!
-  name: String!
+  firstName: String!
+  lastName: String!
   email: String!
+  gender: Gender
+  coverId: String
+  coverUrl: String
+  coverBlurDataURL: String
+  phone: String
+  status: String
+  address: String
+  city: String
+  zip: String
+  country: String
+  state: String
+  about: String
+  isVerified: Boolean!
+  otp: String
+  commission: Float
+  role: Role!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type ReviewImage {

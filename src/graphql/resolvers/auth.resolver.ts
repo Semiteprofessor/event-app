@@ -6,7 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const nodemailer = require("nodemailer");
 const { GraphQLError } = require("graphql");
-const { getUserFromToken } = require("../../lib/jwt.js");
+const { getUserFromToken } = require("../../lib/jwt");
 
 const prisma = new PrismaClient();
 
