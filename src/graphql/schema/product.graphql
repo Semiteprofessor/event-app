@@ -213,6 +213,7 @@ type ShopFilters {
 }
 
 type Query {
+  me: User!
   getProducts(filter: ProductFilterInput): ProductResponse!
   getProductsByCategory(
     categorySlug: String!
