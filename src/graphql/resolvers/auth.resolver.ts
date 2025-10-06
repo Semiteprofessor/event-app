@@ -40,10 +40,19 @@ interface Context {
 }
 
 interface RegisterUserInput {
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
-  role?: string;
-  [key: string]: any;
+  gender?: "MALE" | "FEMALE" | "OTHER";
+  phone?: string;
+  address?: string;
+  city?: string;
+  zip?: string;
+  country?: string;
+  state?: string;
+  about?: string;
+  role?: "SUPER_ADMIN" | "ADMIN" | "USER" | "VENDOR";
 }
 
 interface LoginUserInput {
@@ -194,7 +203,7 @@ const authResolvers: AuthResolvers = {
       });
 
       if (!user) {
-        return { success: false, message: "User not found" };
+        throw new Error("User not found");
       }
 
       const isPasswordMatch = await bcrypt.compare(

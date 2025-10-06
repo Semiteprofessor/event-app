@@ -27,7 +27,7 @@ async function createServer() {
         ...productResolvers.Mutation,
       },
     },
-    context: ({ req }) => createContext(req),
+    context: ({ req }: any) => createContext(req),
     plugins: [],
   });
 

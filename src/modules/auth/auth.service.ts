@@ -5,20 +5,24 @@ import { signJwt } from "../../lib/jwt.js";
 export default function AuthService({ prisma }: { prisma: PrismaClient }) {
   return {
     async signup({
+      firstName,
+      lastName,
       email,
       password,
-      name,
+      phone,
     }: {
+      firstName: string;
+      lastName: string;
       email: string;
       password: string;
-      name?: string;
+      phone: string;
     }) {
       const hash = await bcrypt.hash(password, 12);
       const user = await prisma.user.create({
-        data: { email, passwordHash: hash, name },
+        data: { firstName, lastName, email, password: hash, phone },
       });
       const accessToken = signJwt({ sub: user.id, role: user.role });
-      
+
       const refreshToken = "...";
       await prisma.refreshToken.create({
         data: {
@@ -33,7 +37,7 @@ export default function AuthService({ prisma }: { prisma: PrismaClient }) {
     async login({ email, password }: { email: string; password: string }) {
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user) throw new Error("Invalid credentials");
-      const ok = await bcrypt.compare(password, user.passwordHash);
+      const ok = await bcrypt.compare(password, user.password);
       if (!ok) throw new Error("Invalid credentials");
       const accessToken = signJwt({ sub: user.id, role: user.role });
       return { accessToken, refreshToken: "...", user };

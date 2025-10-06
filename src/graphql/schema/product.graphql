@@ -1,5 +1,24 @@
 scalar DateTime
 
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  USER
+  VENDOR
+}
+
 type User {
   id: ID!
   firstName: String!
@@ -297,11 +316,25 @@ type Query {
   productBySlug(slug: String!): ProductDetail
   compareProducts(ids: [ID!]!): [ProductCompare!]!
   getFilters: FilterData!
+  getOneProductByAdmin(id: ID!): Product!
+  getAllProductSlugs: [String!]!
+}
+
+type AuthPayload {
+  accessToken: String!
+  refreshToken: String!
+  user: User!
 }
 
 type Mutation {
   createProductByAdmin(input: CreateProductInput!): Product!
   deleteProductByAdmin(slug: String!, shopId: String!): DeleteResponse!
+  registerUser(
+    firstName: String!
+    lastName: String!
+    email: String!
+    password: String!
+  ): AuthPayload!
 }
 
 type DeleteResponse {
