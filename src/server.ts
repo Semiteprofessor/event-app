@@ -27,6 +27,10 @@ async function start(): Promise<void> {
     // ✅ BullMQ dashboard route
     rootApp.use("/admin/queues", dashboardRouter);
 
+    // rootApp.use("/", (req: Request, res: Response) => {
+    //   res.send("Welcome to the GraphQL Commerce API");
+    // });
+
     // ✅ Health check route
     interface HealthResponse {
       status: string;

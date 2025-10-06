@@ -1,25 +1,25 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import otpGenerator from "otp-generator";
-import fs from "fs";
-import path from "path";
-import nodemailer from "nodemailer";
-import { GraphQLError } from "graphql";
-import { getUserFromToken } from "../../lib/jwt.js";
+const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const otpGenerator = require("otp-generator");
+const fs = require("fs");
+const path = require("path");
+const nodemailer = require("nodemailer");
+const { GraphQLError } = require("graphql");
+const { getUserFromToken } = require("../../lib/jwt.js");
 
 const prisma = new PrismaClient();
 
-interface Context {
-  user?: { id: string; email: string };
-}
+// Remove TypeScript interfaces
+// interface Context {
+//   user?: { id: string; email: string };
+// }
 
 getUserFromToken;
 
-export const userResolvers = {
+const userResolvers = {
   Query: {
-    // ✅ Fetch currently logged-in user
-    me: async (_: any, __: any, context: Context) => {
+    me: async (_, __, context) => {
       if (!context.user) {
         throw new GraphQLError("Unauthorized", {
           extensions: { code: "UNAUTHENTICATED" },
@@ -40,7 +40,7 @@ export const userResolvers = {
   },
 
   Mutation: {
-    registerUser: async (_: any, { input }: any) => {
+    registerUser: async (_, { input }) => {
       const existingUser = await prisma.user.findUnique({
         where: { email: input.email },
       });
@@ -73,10 +73,8 @@ export const userResolvers = {
 
       const token = jwt.sign(
         { id: user.id, email: user.email },
-        process.env.JWT_SECRET!,
-        {
-          expiresIn: "7d",
-        }
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
       );
 
       const htmlFilePath = path.join(
@@ -118,7 +116,7 @@ export const userResolvers = {
       };
     },
 
-    loginUser: async (_: any, { input }: any) => {
+    loginUser: async (_, { input }) => {
       const user = await prisma.user.findUnique({
         where: { email: input.email },
       });
@@ -137,25 +135,25 @@ export const userResolvers = {
 
       const token = jwt.sign(
         { id: user.id, email: user.email },
-        process.env.JWT_SECRET!,
+        process.env.JWT_SECRET,
         { expiresIn: "7d" }
       );
 
       return { success: true, message: "Login successful", token, user };
     },
 
-    forgetPassword: async (_: any, { email, origin }: any) => {
+    forgetPassword: async (_, { email, origin }) => {
       const user = await prisma.user.findUnique({ where: { email } });
 
       if (!user) {
         return { success: false, message: "User not found" };
       }
 
-      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
         expiresIn: "7d",
       });
-
       const resetLink = `${origin}/auth/reset-password/${token}`;
+
       const htmlFilePath = path.join(
         process.cwd(),
         "src/email-templates",
@@ -189,10 +187,10 @@ export const userResolvers = {
       };
     },
 
-    resetPassword: async (_: any, { token, newPassword }: any) => {
-      let decoded: any;
+    resetPassword: async (_, { token, newPassword }) => {
+      let decoded;
       try {
-        decoded = jwt.verify(token, process.env.JWT_SECRET!);
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
       } catch {
         return { success: false, message: "Invalid or expired token" };
       }
@@ -216,7 +214,7 @@ export const userResolvers = {
       return { success: true, message: "Password updated successfully" };
     },
 
-    verifyOtp: async (_: any, { email, otp }: any) => {
+    verifyOtp: async (_, { email, otp }) => {
       const user = await prisma.user.findUnique({ where: { email } });
 
       if (!user) {
@@ -239,7 +237,7 @@ export const userResolvers = {
       return { success: true, message: "OTP verified successfully", user };
     },
 
-    resendOtp: async (_: any, { email }: any) => {
+    resendOtp: async (_, { email }) => {
       const user = await prisma.user.findUnique({ where: { email } });
 
       if (!user) {
@@ -293,3 +291,5 @@ export const userResolvers = {
     },
   },
 };
+
+module.exports = { userResolvers };

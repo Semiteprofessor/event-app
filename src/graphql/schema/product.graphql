@@ -58,6 +58,24 @@ type ProductReview {
   updatedAt: DateTime!
 }
 
+type ProductPagination {
+  products: [Product!]!
+  total: Int!
+  count: Int!
+}
+
+type FilterResult {
+  colors: [String!]!
+  sizes: [String!]!
+  brands: [Brand!]!
+}
+
+type Filters {
+  colors: [String!]!
+  sizes: [String!]!
+  brands: [Brand!]!
+}
+
 type Product {
   id: ID!
   name: String
@@ -175,7 +193,7 @@ type ShopFilters {
   brands: [Brand!]!
 }
 
-extend type Query {
+type Query {
   getProducts(filter: ProductFilterInput): ProductResponse!
   getProductsByCategory(
     categorySlug: String!
