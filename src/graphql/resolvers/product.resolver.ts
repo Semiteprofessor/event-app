@@ -98,10 +98,10 @@ const productResolvers = {
         });
 
         const formattedProducts = products.map((p) => {
-          const avgRating =
-            p.reviews.length > 0
-              ? p.reviews.reduce((acc, r) => acc + r.rating, 0) /
-                p.reviews.length
+            const avgRating: number =
+            (p.reviews as { rating: number }[]).length > 0
+              ? (p.reviews as { rating: number }[]).reduce((acc: number, r: { rating: number }) => acc + r.rating, 0) /
+              (p.reviews as { rating: number }[]).length
               : 0;
 
           return {

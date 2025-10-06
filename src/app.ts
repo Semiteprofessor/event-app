@@ -1,11 +1,8 @@
 const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
 const { createContext } = require("./context");
+const { authResolvers } = require("./graphql/resolvers/auth.resolver");
 const { productResolvers } = require("./graphql/resolvers/product.resolver");
-const { productResolvers } = require("./graphql/resolvers/auth.resolver");
-
-const { createProductByAdmin, updateProductByAdmin, deleteProductByAdmin } =
-  productResolvers.Mutation;
 
 const path = require("path");
 const fs = require("fs");
@@ -20,10 +17,17 @@ async function createServer() {
 
   const server = new ApolloServer({
     typeDefs,
-    createProductByAdmin,
-    updateProductByAdmin,
-    deleteProductByAdmin,
-    context: createContext,
+    resolvers: {
+      Query: {
+        ...authResolvers.Query,
+        ...productResolvers.Query,
+      },
+      Mutation: {
+        ...authResolvers.Mutation,
+        ...productResolvers.Mutation,
+      },
+    },
+    context: ({ req }) => createContext(req),
     plugins: [],
   });
 
