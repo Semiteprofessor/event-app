@@ -17,9 +17,75 @@ const prisma = new PrismaClient();
 
 getUserFromToken;
 
-const userResolvers = {
+interface User {
+  id: string;
+  email: string;
+  password: string;
+  otp?: string;
+  isVerified?: boolean;
+  role?: string;
+  [key: string]: any;
+}
+
+interface AuthPayload {
+  success: boolean;
+  message: string;
+  token?: string;
+  otp?: string;
+  user?: User | null;
+}
+
+interface Context {
+  user?: { id: string; email: string };
+}
+
+interface RegisterUserInput {
+  email: string;
+  password: string;
+  role?: string;
+  [key: string]: any;
+}
+
+interface LoginUserInput {
+  email: string;
+  password: string;
+}
+
+interface AuthResolvers {
   Query: {
-    me: async (_, __, context) => {
+    me: (_: any, __: any, context: Context) => Promise<User>;
+  };
+  Mutation: {
+    registerUser: (
+      _: any,
+      args: { input: RegisterUserInput }
+    ) => Promise<AuthPayload>;
+    loginUser: (
+      _: any,
+      args: { input: LoginUserInput }
+    ) => Promise<AuthPayload>;
+    forgetPassword: (
+      _: any,
+      args: { email: string; origin: string }
+    ) => Promise<{ success: boolean; message: string; token?: string }>;
+    resetPassword: (
+      _: any,
+      args: { token: string; newPassword: string }
+    ) => Promise<{ success: boolean; message: string }>;
+    verifyOtp: (
+      _: any,
+      args: { email: string; otp: string }
+    ) => Promise<{ success: boolean; message: string; user?: User | null }>;
+    resendOtp: (
+      _: any,
+      args: { email: string }
+    ) => Promise<{ success: boolean; message: string }>;
+  };
+}
+
+const authResolvers: AuthResolvers = {
+  Query: {
+    me: async (_: any, __: any, context: Context): Promise<User> => {
       if (!context.user) {
         throw new GraphQLError("Unauthorized", {
           extensions: { code: "UNAUTHENTICATED" },
@@ -40,7 +106,10 @@ const userResolvers = {
   },
 
   Mutation: {
-    registerUser: async (_, { input }) => {
+    registerUser: async (
+      _: any,
+      { input }: { input: RegisterUserInput }
+    ): Promise<AuthPayload> => {
       const existingUser = await prisma.user.findUnique({
         where: { email: input.email },
       });
@@ -116,7 +185,10 @@ const userResolvers = {
       };
     },
 
-    loginUser: async (_, { input }) => {
+    loginUser: async (
+      _: any,
+      { input }: { input: LoginUserInput }
+    ): Promise<AuthPayload> => {
       const user = await prisma.user.findUnique({
         where: { email: input.email },
       });
@@ -142,7 +214,10 @@ const userResolvers = {
       return { success: true, message: "Login successful", token, user };
     },
 
-    forgetPassword: async (_, { email, origin }) => {
+    forgetPassword: async (
+      _: any,
+      { email, origin }: { email: string; origin: string }
+    ): Promise<{ success: boolean; message: string; token?: string }> => {
       const user = await prisma.user.findUnique({ where: { email } });
 
       if (!user) {
@@ -187,8 +262,11 @@ const userResolvers = {
       };
     },
 
-    resetPassword: async (_, { token, newPassword }) => {
-      let decoded;
+    resetPassword: async (
+      _: any,
+      { token, newPassword }: { token: string; newPassword: string }
+    ): Promise<{ success: boolean; message: string }> => {
+      let decoded: any;
       try {
         decoded = jwt.verify(token, process.env.JWT_SECRET);
       } catch {
@@ -214,7 +292,10 @@ const userResolvers = {
       return { success: true, message: "Password updated successfully" };
     },
 
-    verifyOtp: async (_, { email, otp }) => {
+    verifyOtp: async (
+      _: any,
+      { email, otp }: { email: string; otp: string }
+    ): Promise<{ success: boolean; message: string; user?: User | null }> => {
       const user = await prisma.user.findUnique({ where: { email } });
 
       if (!user) {
@@ -237,7 +318,10 @@ const userResolvers = {
       return { success: true, message: "OTP verified successfully", user };
     },
 
-    resendOtp: async (_, { email }) => {
+    resendOtp: async (
+      _: any,
+      { email }: { email: string }
+    ): Promise<{ success: boolean; message: string }> => {
       const user = await prisma.user.findUnique({ where: { email } });
 
       if (!user) {
@@ -292,4 +376,4 @@ const userResolvers = {
   },
 };
 
-module.exports = { userResolvers };
+module.exports = { authResolvers };

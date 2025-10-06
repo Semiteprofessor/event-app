@@ -2,6 +2,7 @@ const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
 const { createContext } = require("./context");
 const { productResolvers } = require("./graphql/resolvers/product.resolver");
+const { productResolvers } = require("./graphql/resolvers/auth.resolver");
 
 const { createProductByAdmin, updateProductByAdmin, deleteProductByAdmin } =
   productResolvers.Mutation;
