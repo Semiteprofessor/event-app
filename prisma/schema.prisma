@@ -108,7 +108,7 @@ model User {
 
   followingShops Shop[] @relation("ShopFollowers")
 
-  phone   String
+  phone   String?
   status  String?
   address String?
   city    String?

@@ -129,10 +129,14 @@ const authResolvers: AuthResolvers = {
         return {
           success: false,
           message: "User with this email already exists",
+          accessToken: null,
+          refreshToken: null,
+          user: null,
         };
       }
 
       const hashedPassword = await bcrypt.hash(input.password, 10);
+
       const otp = otpGenerator.generate(6, {
         upperCaseAlphabets: false,
         specialChars: false,
@@ -149,12 +153,24 @@ const authResolvers: AuthResolvers = {
         },
       });
 
-      const token = jwt.sign(
+      // JWT tokens
+      if (!process.env.JWT_SECRET) {
+        throw new Error("JWT_SECRET is not defined in environment variables");
+      }
+
+      const accessToken = jwt.sign(
         { id: user.id, email: user.email },
         process.env.JWT_SECRET,
         { expiresIn: "7d" }
       );
 
+      const refreshToken = jwt.sign(
+        { id: user.id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "30d" }
+      );
+
+      // Send OTP email
       const htmlFilePath = path.join(
         process.cwd(),
         "email-templates",
@@ -188,8 +204,8 @@ const authResolvers: AuthResolvers = {
       return {
         success: true,
         message: "User created successfully",
-        otp,
-        token,
+        accessToken,
+        refreshToken,
         user,
       };
     },

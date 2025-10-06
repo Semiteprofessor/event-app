@@ -3,14 +3,17 @@ const { ApolloServer } = require("apollo-server-express");
 const { createContext } = require("./context");
 const { authResolvers } = require("./graphql/resolvers/auth.resolver");
 const { productResolvers } = require("./graphql/resolvers/product.resolver");
-
 const path = require("path");
 const fs = require("fs");
 
-const typeDefs = fs.readFileSync(
-  path.join(__dirname, "./graphql/schema/product.graphql"),
-  "utf8"
-);
+// Load all .graphql files from schema directory
+const schemaDir = path.join(__dirname, "./graphql/schema");
+
+const typeDefs = fs
+  .readdirSync(schemaDir)
+  .filter((file) => file.endsWith(".graphql"))
+  .map((file) => fs.readFileSync(path.join(schemaDir, file), "utf8"))
+  .join("\n");
 
 async function createServer() {
   const app = express();
@@ -27,7 +30,7 @@ async function createServer() {
         ...productResolvers.Mutation,
       },
     },
-    context: ({ req }: any) => createContext(req),
+    context: ({ req }) => createContext({ req }),
     plugins: [],
   });
 

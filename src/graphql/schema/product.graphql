@@ -329,12 +329,7 @@ type AuthPayload {
 type Mutation {
   createProductByAdmin(input: CreateProductInput!): Product!
   deleteProductByAdmin(slug: String!, shopId: String!): DeleteResponse!
-  registerUser(
-    firstName: String!
-    lastName: String!
-    email: String!
-    password: String!
-  ): AuthPayload!
+  updateProductByAdmin(id: ID!, data: UpdateProductInput!): Product!
 }
 
 type DeleteResponse {
