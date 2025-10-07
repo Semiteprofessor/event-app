@@ -57,9 +57,12 @@ type InvoiceResult {
 }
 
 type AuthPayload {
+  success: Boolean!
+  message: String!
   accessToken: String!
   refreshToken: String!
   user: User!
+  otp: String
 }
 
 input RegisterInput {

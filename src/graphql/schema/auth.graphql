@@ -62,9 +62,8 @@ type AuthPayload {
   accessToken: String!
   refreshToken: String!
   user: User!
-  otp: String
+  otp: String!
 }
-
 
 input RegisterInput {
   firstName: String!

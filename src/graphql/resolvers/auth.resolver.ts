@@ -125,15 +125,16 @@ const authResolvers: AuthResolvers = {
 
       const userCount = await prisma.user.count();
 
-      if (existingUser) {
-        return {
-          success: false,
-          message: "User with this email already exists",
-          accessToken: null,
-          refreshToken: null,
-          user: null,
-        };
-      }
+      // if (existingUser) {
+      //   return {
+      //     success: false,
+      //     message: "User with this email already exists",
+      //     accessToken: "",
+      //     refreshToken: "",
+      //     user: null,
+      //     otp: undefined,
+      //   };
+      // }
 
       const hashedPassword = await bcrypt.hash(input.password, 10);
 
@@ -153,7 +154,6 @@ const authResolvers: AuthResolvers = {
         },
       });
 
-      // JWT tokens
       if (!process.env.JWT_SECRET) {
         throw new Error("JWT_SECRET is not defined in environment variables");
       }
@@ -207,6 +207,7 @@ const authResolvers: AuthResolvers = {
         accessToken,
         refreshToken,
         user,
+        otp,
       };
     },
 

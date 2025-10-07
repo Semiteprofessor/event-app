@@ -18,7 +18,7 @@ export const createContext = ({ req }: { req: any }): Context => {
     try {
       const decoded = jwt.verify(
         token,
-        process.env.JWT_SECRET || "123456"
+        process.env.JWT_SECRET || "secret"
       ) as any;
       user = { id: decoded.id, role: decoded.role };
     } catch (err: any) {
