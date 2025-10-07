@@ -30,10 +30,11 @@ interface User {
 interface AuthPayload {
   success: boolean;
   message: string;
-  accessToken: string;
-  refreshToken: string;
+  token?: string;
+  accessToken?: string;
+  refreshToken?: string;
   otp?: string;
-  user?: User | null;
+  user?: any;
 }
 
 interface Context {
@@ -218,7 +219,14 @@ const authResolvers: AuthResolvers = {
       });
 
       if (!user) {
-        throw new Error("User not found");
+        return {
+          success: false,
+          message: "User not found",
+          accessToken: "",
+          refreshToken: "",
+          user: null,
+          otp: undefined,
+        };
       }
 
       const isPasswordMatch = await bcrypt.compare(
@@ -226,13 +234,26 @@ const authResolvers: AuthResolvers = {
         user.password
       );
       if (!isPasswordMatch) {
-        return { success: false, message: "Incorrect password" };
+        return {
+          success: false,
+          message: "Incorrect password",
+          accessToken: "",
+          refreshToken: "",
+          user: null,
+          otp: undefined,
+        };
       }
 
-      const token = jwt.sign(
+      const accessToken = jwt.sign(
         { id: user.id, email: user.email },
         process.env.JWT_SECRET,
         { expiresIn: "7d" }
+      );
+
+      const refreshToken = jwt.sign(
+        { id: user.id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "30d" }
       );
 
       return {
@@ -241,6 +262,7 @@ const authResolvers: AuthResolvers = {
         accessToken,
         refreshToken,
         user,
+        otp: undefined,
       };
     },
 

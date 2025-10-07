@@ -11,8 +11,8 @@ const schemaDir = path.join(__dirname, "./graphql/schema");
 
 const typeDefs = fs
   .readdirSync(schemaDir)
-  .filter((file) => file.endsWith(".graphql"))
-  .map((file) => fs.readFileSync(path.join(schemaDir, file), "utf8"))
+  .filter((file: any) => file.endsWith(".graphql"))
+  .map((file: any) => fs.readFileSync(path.join(schemaDir, file), "utf8"))
   .join("\n");
 
 async function createServer() {
@@ -30,7 +30,7 @@ async function createServer() {
         ...productResolvers.Mutation,
       },
     },
-    context: ({ req }) => createContext({ req }),
+    context: ({ req }: any) => createContext({ req }),
     plugins: [],
   });
 
