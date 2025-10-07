@@ -55,7 +55,7 @@ interface RegisterUserInput {
   role?: "SUPER_ADMIN" | "ADMIN" | "USER" | "VENDOR";
 }
 
-interface LoginUserInput {
+interface LoginInput {
   email: string;
   password: string;
 }
@@ -69,10 +69,7 @@ interface AuthResolvers {
       _: any,
       args: { input: RegisterUserInput }
     ) => Promise<AuthPayload>;
-    loginUser: (
-      _: any,
-      args: { input: LoginUserInput }
-    ) => Promise<AuthPayload>;
+    loginUser: (_: any, args: { input: LoginInput }) => Promise<AuthPayload>;
     forgetPassword: (
       _: any,
       args: { email: string; origin: string }
@@ -125,16 +122,16 @@ const authResolvers: AuthResolvers = {
 
       const userCount = await prisma.user.count();
 
-      // if (existingUser) {
-      //   return {
-      //     success: false,
-      //     message: "User with this email already exists",
-      //     accessToken: "",
-      //     refreshToken: "",
-      //     user: null,
-      //     otp: undefined,
-      //   };
-      // }
+      if (existingUser) {
+        return {
+          success: false,
+          message: "User with this email already exists",
+          accessToken: "",
+          refreshToken: "",
+          user: null,
+          otp: undefined,
+        };
+      }
 
       const hashedPassword = await bcrypt.hash(input.password, 10);
 
@@ -213,7 +210,7 @@ const authResolvers: AuthResolvers = {
 
     loginUser: async (
       _: any,
-      { input }: { input: LoginUserInput }
+      { input }: { input: LoginInput }
     ): Promise<AuthPayload> => {
       const user = await prisma.user.findUnique({
         where: { email: input.email },
