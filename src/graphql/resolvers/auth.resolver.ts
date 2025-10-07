@@ -30,7 +30,8 @@ interface User {
 interface AuthPayload {
   success: boolean;
   message: string;
-  token?: string;
+  accessToken: string;
+  refreshToken: string;
   otp?: string;
   user?: User | null;
 }
@@ -234,7 +235,13 @@ const authResolvers: AuthResolvers = {
         { expiresIn: "7d" }
       );
 
-      return { success: true, message: "Login successful", token, user };
+      return {
+        success: true,
+        message: "Login successful",
+        accessToken,
+        refreshToken,
+        user,
+      };
     },
 
     forgetPassword: async (
